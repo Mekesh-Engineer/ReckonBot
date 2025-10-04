@@ -1,12 +1,16 @@
-{% macro attr(bool_val, true_val, false_val='') %}{{ true_val if bool_val else false_val }}{% endmacro %}
 <!DOCTYPE html>
 <html lang="{{ lang|default('en') }}" data-theme="{{ theme|default('dark') }}">
+
 <head>
+  {% macro attr(bool_val, true_val, false_val='') %}{{ true_val if bool_val else false_val }}{% endmacro %}
   {% include "partials/_meta.html" %}
   <title>{% block title %}FlowGateX Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
   {% block head_extra %}{% endblock %}
   {% block scripts_head %}{% endblock %}
+
 </head>
+
 <body class="font-[--font-primary] bg-[--bg-color] text-[--text-color] overflow-x-hidden antialiased">
   {% include "partials/_header.html" %}
 
@@ -15,10 +19,8 @@
     {% include "partials/_sidebar.html" %}
     {% block sidebar_after %}{% endblock %}
 
-    <main id="mainContent"
-          class="flex-1 pt-14 px-3 pb-6 min-h-screen transition-all duration-250 lg:ml-64"
-          data-expanded="true"
-          tabindex="-1">
+    <main id="mainContent" class="flex-1 pt-14 px-3 pb-6 min-h-screen transition-all duration-250 lg:ml-64"
+      data-expanded="true" tabindex="-1">
       {% block page_header %}
       <!-- Optional page-level header -->
       {% endblock %}
@@ -32,8 +34,10 @@
   {% block modals_extra %}{% endblock %}
 
   {% block scripts %}
-    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% endblock %}
   {% block scripts_extra %}{% endblock %}
 </body>
+
 </html>

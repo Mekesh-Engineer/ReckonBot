@@ -96,7 +96,7 @@ bots_bp = Blueprint("bots", __name__, url_prefix="/bots")
 @bots_bp.route("/bot1/dashboard")
 def bot1_dashboard():
     return render_template(
-        "dashboard/index.html",
+        "dashboard/bot1.html",
         breadcrumb_current="Bot 1 Dashboard",
         user=get_mock_user(),
     )
@@ -104,7 +104,7 @@ def bot1_dashboard():
 @bots_bp.route("/bot2/dashboard")
 def bot2_dashboard():
     return render_template(
-        "dashboard/index.html",
+        "dashboard/bot2.html",
         breadcrumb_current="Bot 2 Dashboard",
         user=get_mock_user(),
     )

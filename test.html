@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot 1 Surveillance · ReckonBot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-primary: #121618;
+            --bg-secondary: #1C2123;
+            --bg-tertiary: #262B2E;
+            --text-primary: #F1F5F9;
+            --text-muted: #5F6E7C;
+            --accent-color: #FF6B35;
+            --accent-hover: #FF5314;
+            --border-color: #2E353A;
+            --success: #2ea043;
+            --warning: #db9a04;
+            --error: #f85149;
+            --info: #58a6ff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Main Panel Styling */
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.9rem;
+            padding: 1.25rem;
+            transition: all 0.25s ease;
+        }
+
+        .panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+            border-color: var(--accent-color);
+        }
+
+        /* Header Components */
+        .connection-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .connection-btn.connected {
+            background: rgba(46, 160, 67, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .connection-btn.disconnected {
+            background: rgba(248, 81, 73, 0.15);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .connection-btn.connected .status-dot {
+            background: var(--success);
+        }
+
+        .connection-btn.disconnected .status-dot {
+            background: var(--error);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+        }
+
+        .mode-toggle button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-toggle button.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        /* Video Stream */
+        .video-container {
+            position: relative;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            border: 1px solid var(--border-color);
+        }
+
+        .video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .bbox {
+            position: absolute;
+            border: 2px solid rgba(255, 107, 53, 0.8);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .confidence-badge {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            background: rgba(255, 107, 53, 0.95);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .stream-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .video-control-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .video-control-btn:hover {
+            background: var(--bg-primary);
+            color: var(--accent-color);
+        }
+
+        /* Sensor Modules */
+        .distance-bar {
+            width: 100%;
+            height: 2rem;
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .distance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B35, #FF8C00);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .servo-gauge {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .gauge-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--accent-color) 0deg, var(--bg-tertiary) 0deg);
+            transition: background 0.3s ease;
+        }
+
+        .gauge-inner {
+            position: absolute;
+            inset: 10px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .gauge-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-color);
+        }
+
+        .climate-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0.5rem 0;
+        }
+
+        .climate-value.normal {
+            color: var(--success);
+        }
+
+        .climate-value.warning {
+            color: var(--warning);
+        }
+
+        .climate-value.critical {
+            color: var(--error);
+        }
+
+        /* General Components */
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .alert-badge.high {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .alert-badge.medium {
+            background: rgba(219, 154, 4, 0.2);
+            color: #db9a04;
+        }
+
+        .alert-badge.low {
+            background: rgba(88, 166, 255, 0.2);
+            color: #58a6ff;
+        }
+
+        .comm-log {
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) transparent;
+        }
+
+        .comm-log table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comm-log thead {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 1;
+        }
+
+        .comm-log th {
+            padding: 0.5rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .comm-log td {
+            padding: 0.5rem;
+            font-size: 0.7rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comm-log tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comm-log tr.critical {
+            background: rgba(248, 81, 73, 0.1);
+        }
+
+        /* Tooltip */
+        .tooltip-trigger {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip-trigger .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 0.35rem;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            margin-bottom: 0.5rem;
+            z-index: 100;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .tooltip-trigger:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="p-4 lg:p-6">
+
+    <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight">Bot 1 Surveillance Control Center</h1>
+            <p class="text-sm" style="color: var(--text-muted);">Real-time visual, environmental, and alert telemetry
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="mode-toggle">
+                <button id="testModeBtn" class="active"><i class="bi bi-file-code"></i> Test Mode</button>
+                <button id="liveModeBtn"><i class="bi bi-broadcast"></i> Live Mode</button>
+            </div>
+
+            <button class="connection-btn connected" id="connectionBtn">
+                <span class="status-dot"></span>
+                <span id="connectionText">Connected</span>
+            </button>
+
+            <div class="tooltip-trigger">
+                <div
+                    style="padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">
+                    <i class="bi bi-clock"></i> <span id="clock">00:00:00</span>
+                </div>
+                <div class="tooltip-content" id="syncTooltip">Last sync: 2s ago</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="space-y-6">
+        <section class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 panel">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <i class="bi bi-camera-video-fill text-xl" style="color: var(--accent-color);"></i>
+                        <h2 class="font-semibold text-lg">Live Video Stream</h2>
+                        <span class="alert-badge high"
+                            style="background: rgba(255, 107, 53, 0.2); color: var(--accent-color);">
+                            <i class="bi bi-circle-fill"
+                                style="font-size: 0.4rem; animation: pulse 2s ease-in-out infinite;"></i> LIVE
+                        </span>
+                    </div>
+                    <span
+                        style="font-size: 0.65rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">MJPEG
+                        • 30fps • 1080p</span>
+                </div>
+
+                <figure class="video-container">
+                    <img src="https://picsum.photos/800/450?grayscale" alt="Live Stream from Bot 1" class="video-stream"
+                        id="videoStream">
+
+                    <div class="bbox" style="left: 30%; top: 20%; width: 25%; height: 40%;">
+                        <div class="confidence-badge">Person: 92%</div>
+                    </div>
+
+                    <div class="stream-loader" id="streamLoader" style="display: none;">
+                        <div class="spinner"></div>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">Connecting to ESP32-CAM...</span>
+                    </div>
+                </figure>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+                    <div class="flex items-center gap-2">
+                        <button class="video-control-btn"><i class="bi bi-play-fill"></i></button>
+                        <button class="video-control-btn"><i class="bi bi-pause-fill"></i></button>
+                        <button class="video-control-btn"><i class="bi bi-camera-fill"></i></button>
+                        <button class="video-control-btn"><i class="bi bi-arrows-fullscreen"></i></button>
+                    </div>
+                    <button id="recBtn"
+                        style="padding: 0.5rem 1.25rem; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--error); color: var(--error); border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: all 0.2s;">
+                        <i class="bi bi-record-circle-fill"></i> REC
+                    </button>
+                </div>
+            </div>
+
+            <aside class="space-y-4">
+                <div class="panel">
+                    <h3 class="text-xs font-semibold uppercase mb-3" style="color: var(--text-muted);">Bot Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-sm"><i class="bi bi-battery-charging text-lg"
+                                    style="color: var(--success);"></i> Battery</div>
+                            <span class="font-semibold" style="color: var(--success);">85%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-sm"><i class="bi bi-reception-4 text-lg"
+                                    style="color: var(--success);"></i> Connectivity</div>
+                            <span class="font-semibold" style="color: var(--success);">Strong</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-sm"><i class="bi bi-geo-alt-fill text-lg"
+                                    style="color: var(--info);"></i> Location</div>
+                            <span class="font-semibold" style="color: var(--info);">Zone 3</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-sm"><i
+                                    class="bi bi-exclamation-triangle-fill text-lg" style="color: var(--warning);"></i>
+                                Active Alerts</div>
+                            <span class="font-semibold" style="color: var(--warning);">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3 class="text-xs font-semibold uppercase mb-3" style="color: var(--text-muted);">Recent Activity
+                    </h3>
+                    <div id="activityLog" class="space-y-2"
+                        style="max-height: 250px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--accent-color) transparent;">
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="panel">
+                <h3 class="text-xs font-semibold uppercase mb-3" style="color: var(--text-muted);">Ultrasonic Distance
+                </h3>
+                <div class="distance-bar">
+                    <div class="distance-fill" id="distanceFill" style="width: 65%;">32 cm</div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs" style="color: var(--text-muted);">
+                    <span>0 cm</span>
+                    <span>50 cm</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="text-xs font-semibold uppercase mb-3 text-center" style="color: var(--text-muted);">Servo
+                    Angle</h3>
+                <div class="servo-gauge">
+                    <div class="gauge-circle" id="servoGauge">
+                        <div class="gauge-inner">
+                            <div class="gauge-value" id="servoValue">90°</div>
+                            <span class="text-xs" style="color: var(--text-muted);">Position</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="text-xs font-semibold uppercase mb-3" style="color: var(--text-muted);">Environment</h3>
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div>
+                        <i class="bi bi-thermometer-half text-2xl" style="color: var(--info);"></i>
+                        <div class="climate-value normal" id="tempValue">24°C</div>
+                        <div class="text-xs" style="color: var(--text-muted);">Temperature</div>
+                    </div>
+                    <div>
+                        <i class="bi bi-droplet-fill text-2xl" style="color: var(--info);"></i>
+                        <div class="climate-value normal" id="humidityValue">58%</div>
+                        <div class="text-xs" style="color: var(--text-muted);">Humidity</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="text-xs font-semibold uppercase mb-3" style="color: var(--text-muted);">Controls & Alerts
+                </h3>
+                <div class="space-y-3">
+                    <div
+                        class="control-modes flex gap-0 bg-[--bg-tertiary] border border-[--border-color] rounded-md p-1">
+                        <button class="flex-1 p-2 text-xs font-semibold rounded active" data-mode="bluetooth"><i
+                                class="bi bi-bluetooth"></i> BT</button>
+                        <button class="flex-1 p-2 text-xs font-semibold rounded" data-mode="manual"><i
+                                class="bi bi-joystick"></i> Manual</button>
+                        <button class="flex-1 p-2 text-xs font-semibold rounded" data-mode="auto"><i
+                                class="bi bi-cpu"></i> Auto</button>
+                    </div>
+                    <div id="buzzerToggle"
+                        class="flex items-center gap-2 p-2 bg-[--bg-tertiary] border border-[--border-color] rounded-md cursor-pointer transition active">
+                        <i class="bi bi-megaphone-fill text-lg" style="color: var(--error);"></i>
+                        <div class="flex-1 text-xs font-semibold">Buzzer Active</div>
+                        <i class="bi bi-toggle-on text-2xl" style="color: var(--error);"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid lg:grid-cols-2 gap-6">
+            <div class="panel">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold"><i class="bi bi-graph-up" style="color: var(--accent-color);"></i> Sensor
+                        Analytics</h3>
+                    <select class="p-1 bg-[--bg-tertiary] border border-[--border-color] rounded text-xs">
+                        <option>Last 24 Hours</option>
+                    </select>
+                </div>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="font-semibold mb-4"><i class="bi bi-terminal" style="color: var(--accent-color);"></i>
+                    Communication Log</h3>
+                <div class="comm-log">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commLogBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-8 pt-4 border-t border-[--border-color] opacity-70">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs"
+            style="color: var(--text-muted);">
+            <div>© 2025 ReckonBot · Bot 1 Surveillance System</div>
+            <div class="flex items-center gap-4">
+                <span>v2.1.0</span><span>•</span><span>Powered by ESP32</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = {
+                // State
+                isLiveMode: false,
+                simulationInterval: null,
+                chart: null,
+
+                // DOM Elements
+                elements: {
+                    clock: document.getElementById('clock'),
+                    syncTooltip: document.getElementById('syncTooltip'),
+                    testModeBtn: document.getElementById('testModeBtn'),
+                    liveModeBtn: document.getElementById('liveModeBtn'),
+                    connectionBtn: document.getElementById('connectionBtn'),
+                    connectionText: document.getElementById('connectionText'),
+                    distanceFill: document.getElementById('distanceFill'),
+                    servoValue: document.getElementById('servoValue'),
+                    servoGauge: document.getElementById('servoGauge'),
+                    tempValue: document.getElementById('tempValue'),
+                    humidityValue: document.getElementById('humidityValue'),
+                    buzzerToggle: document.getElementById('buzzerToggle'),
+                    commLogBody: document.getElementById('commLogBody'),
+                    activityLog: document.getElementById('activityLog'),
+                    controlModeBtns: document.querySelectorAll('.control-modes button'),
+                },
+
+                init() {
+                    this.updateClock();
+                    setInterval(() => this.updateClock(), 1000);
+                    this.initChart();
+                    this.initEventListeners();
+                    this.startSimulation(); // Start in test mode
+                },
+
+                initEventListeners() {
+                    this.elements.testModeBtn.addEventListener('click', () => this.setMode(false));
+                    this.elements.liveModeBtn.addEventListener('click', () => this.setMode(true));
+
+                    this.elements.controlModeBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            this.elements.controlModeBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                        });
+                    });
+
+                    this.elements.buzzerToggle.addEventListener('click', () => {
+                        const isActive = this.elements.buzzerToggle.classList.toggle('active');
+                        const icon = this.elements.buzzerToggle.querySelector('.bi-toggle-on, .bi-toggle-off');
+                        icon.className = isActive ? 'bi bi-toggle-on text-2xl' : 'bi bi-toggle-off text-2xl';
+                    });
+                },
+
+                updateClock() {
+                    this.elements.clock.textContent = new Date().toLocaleTimeString();
+                },
+
+                setMode(isLive) {
+                    this.isLiveMode = isLive;
+                    this.elements.liveModeBtn.classList.toggle('active', isLive);
+                    this.elements.testModeBtn.classList.toggle('active', !isLive);
+
+                    if (isLive) {
+                        this.stopSimulation();
+                        this.elements.connectionText.textContent = 'Connecting...';
+                        this.elements.connectionBtn.classList.remove('connected');
+                        this.elements.connectionBtn.classList.add('disconnected');
+                        // TODO: Add WebSocket/API connection logic here
+                    } else {
+                        this.elements.connectionText.textContent = 'Connected';
+                        this.elements.connectionBtn.classList.remove('disconnected');
+                        this.elements.connectionBtn.classList.add('connected');
+                        this.startSimulation();
+                    }
+                },
+
+                startSimulation() {
+                    if (this.simulationInterval) clearInterval(this.simulationInterval);
+                    this.simulationInterval = setInterval(() => this.updateDashboard(), 2000);
+                },
+
+                stopSimulation() {
+                    if (this.simulationInterval) clearInterval(this.simulationInterval);
+                },
+
+                updateDashboard() {
+                    // Generate random sensor data
+                    const distance = Math.floor(Math.random() * 50);
+                    const angle = Math.floor(Math.random() * 180);
+                    const temp = (20 + Math.random() * 15).toFixed(1);
+                    const humidity = (40 + Math.random() * 40).toFixed(0);
+
+                    // Update UI elements
+                    this.updateDistance(distance);
+                    this.updateServo(angle);
+                    this.updateClimate(temp, humidity);
+
+                    // Add new log entries
+                    this.addCommLogEntry();
+                    this.addActivityLogEntry();
+
+                    // Update chart
+                    this.updateChartData({ temp, humidity });
+
+                    // Update sync timestamp
+                    this.elements.syncTooltip.textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
+                },
+
+                updateDistance(distance) {
+                    const fill = this.elements.distanceFill;
+                    fill.style.width = `${(distance / 50) * 100}%`;
+                    fill.textContent = `${distance} cm`;
+                },
+
+                updateServo(angle) {
+                    this.elements.servoValue.textContent = `${angle}°`;
+                    this.elements.servoGauge.style.background = `conic-gradient(from 0deg, var(--accent-color) ${angle}deg, var(--bg-tertiary) ${angle}deg)`;
+                },
+
+                updateClimate(temp, humidity) {
+                    const tempEl = this.elements.tempValue;
+                    tempEl.textContent = `${temp}°C`;
+                    tempEl.className = 'climate-value ' + (temp > 30 ? 'critical' : temp > 26 ? 'warning' : 'normal');
+
+                    this.elements.humidityValue.textContent = `${humidity}%`;
+                },
+
+                addCommLogEntry() {
+                    const types = [
+                        { name: 'Critical', class: 'high' },
+                        { name: 'Warning', class: 'medium' },
+                        { name: 'Info', class: 'low' }
+                    ];
+                    const messages = ['System check', 'Motion alert', 'Battery low', 'Sync complete'];
+                    const entry = {
+                        time: new Date().toLocaleTimeString(),
+                        type: types[Math.floor(Math.random() * types.length)],
+                        message: messages[Math.floor(Math.random() * messages.length)],
+                        isCritical: Math.random() > 0.9
+                    };
+
+                    const tr = document.createElement('tr');
+                    if (entry.isCritical) tr.classList.add('critical');
+                    tr.innerHTML = `
+                    <td>${entry.time}</td>
+                    <td><span class="alert-badge ${entry.type.class}">${entry.type.name}</span></td>
+                    <td>${entry.message}</td>
+                    <td><i class="bi bi-check-circle-fill" style="color: var(--success);"></i></td>
+                `;
+                    this.elements.commLogBody.prepend(tr);
+                    if (this.elements.commLogBody.children.length > 20) {
+                        this.elements.commLogBody.lastChild.remove();
+                    }
+                },
+
+                addActivityLogEntry() {
+                    const types = [
+                        { name: 'Motion detected', color: 'var(--error)' },
+                        { name: 'Patrol complete', color: 'var(--info)' },
+                        { name: 'Gas spike', color: 'var(--warning)' },
+                        { name: 'System check', color: 'var(--success)' },
+                    ];
+                    const entry = types[Math.floor(Math.random() * types.length)];
+
+                    const div = document.createElement('div');
+                    div.style.padding = '0.65rem';
+                    div.style.background = 'var(--bg-tertiary)';
+                    div.style.borderLeft = `3px solid ${entry.color}`;
+                    div.style.borderRadius = '0.35rem';
+
+                    div.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-semibold">${entry.name}</span>
+                        <span class="text-xs text-[--text-muted]">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                `;
+                    this.elements.activityLog.prepend(div);
+                    if (this.elements.activityLog.children.length > 10) {
+                        this.elements.activityLog.lastChild.remove();
+                    }
+                },
+
+                initChart() {
+                    const ctx = document.getElementById('analyticsChart').getContext('2d');
+                    const initialData = (len) => Array(len).fill(null);
+
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: initialData(15).map((_, i) => i),
+                            datasets: [
+                                {
+                                    label: 'Temperature (°C)',
+                                    data: initialData(15),
+                                    borderColor: '#58a6ff',
+                                    backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                },
+                                {
+                                    label: 'Humidity (%)',
+                                    data: initialData(15),
+                                    borderColor: '#db9a04',
+                                    backgroundColor: 'rgba(219, 154, 4, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    align: 'end',
+                                    labels: { color: 'var(--text-muted)', boxWidth: 15, padding: 20, font: { size: 10 } }
+                                },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { grid: { color: '#2E353A' }, ticks: { color: '#5F6E7C', font: { size: 10 } } }
+                            },
+                            animation: { duration: 500 }
+                        }
+                    });
+                },
+
+                updateChartData(data) {
+                    if (!this.chart) return;
+                    const now = new Date().toLocaleTimeString();
+
+                    // Add new label
+                    this.chart.data.labels.push(now);
+                    if (this.chart.data.labels.length > 15) this.chart.data.labels.shift();
+
+                    // Add new data
+                    this.chart.data.datasets[0].data.push(data.temp);
+                    this.chart.data.datasets[1].data.push(data.humidity);
+
+                    if (this.chart.data.datasets[0].data.length > 15) {
+                        this.chart.data.datasets[0].data.shift();
+                        this.chart.data.datasets[1].data.shift();
+                    }
+
+                    this.chart.update();
+                }
+            };
+
+            app.init();
+        });
+    </script>
+</body>
+
+</html>
