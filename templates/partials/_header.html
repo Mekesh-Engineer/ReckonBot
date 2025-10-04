@@ -1,0 +1,196 @@
+<!-- Flat UI Header (Plain Design) -->
+<header class="fixed top-0 left-0 right-0 z-[--z-fixed] bg-[--bg-secondary] border-b border-[--border-color] shadow-sm">
+  <nav class="flex items-center justify-between px-4 lg:px-6 py-2.5" aria-label="Global">
+    <!-- Left: Sidebar toggle + brand + breadcrumbs -->
+    <div class="flex items-center gap-4 min-w-0">
+      <!-- Sidebar Toggle (always visible) -->
+      <button data-toggle="sidebar" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="false"
+        class="inline-flex items-center justify-center w-10 h-10 rounded-md text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-tertiary] border border-transparent hover:border-[--border-color] focus-ring transition relative">
+        <!-- Hamburger Icon -->
+        <i class="bi bi-list text-xl pointer-events-none toggle-icon" data-state="closed"></i>
+        <!-- Close Icon -->
+        <i class="bi bi-x-lg text-lg pointer-events-none toggle-icon hidden" data-state="open"></i>
+      </button>
+
+      <!-- Brand -->
+      <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-2 shrink-0 group"
+        aria-label="ReckonBot Home">
+        <span
+          class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[--accent-color] shadow-sm border border-[--accent-color] transition-transform group-hover:scale-105 group-hover:shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="20" width="20" fill="#FFFFFF"
+            role="img" aria-hidden="true">
+            <path
+              d="M240-360v40q0 17-11.5 28.5T200-280h-40q-17 0-28.5-11.5T120-320v-320l84-240q6-18 21.5-29t34.5-11h440q19 0 34.5 11t21.5 29l84 240v320q0 17-11.5 28.5T800-280h-40q-17 0-28.5-11.5T720-320v-40H240Zm-8-360h496l-42-120H274l-42 120Zm-32 80v200-200Zm100 160q25 0 42.5-17.5T360-540q0-25-17.5-42.5T300-600q-25 0-42.5 17.5T240-540q0 25 17.5 42.5T300-480Zm360 0q25 0 42.5-17.5T720-540q0-25-17.5-42.5T660-600q-25 0-42.5 17.5T600-540q0 25 17.5 42.5T660-480ZM520-40 280-160h160v-80l240 120H520v80ZM200-440h560v-200H200v200Z" />
+          </svg>
+        </span>
+        <span
+          class="font-semibold tracking-tight text-[--text-color] group-hover:text-[--accent-color] transition">ReckonBot</span>
+      </a>
+
+      <!-- Breadcrumbs -->
+      <nav aria-label="Breadcrumb" class="hidden md:block min-w-0">
+        {% set crumb_list = breadcrumbs if breadcrumbs is defined and breadcrumbs else [] %}
+        <ol class="flex items-center gap-2 text-sm text-[--text-muted] flex-wrap" data-breadcrumb-root="Home">
+          <!-- Root -->
+          <li class="flex items-center gap-2">
+            <a href="{{ url_for('dashboard.index') }}"
+              class="text-[--text-color] hover:text-[--accent-color] font-medium transition truncate max-w-[10rem]">
+            </a>
+            {% if crumb_list|length > 0 %}
+            <span class="text-[--text-muted]">/</span>
+            {% endif %}
+          </li>
+          {% for crumb in crumb_list %}
+          <li class="flex items-center gap-2">
+            {% if not loop.last and crumb.url %}
+            <a href="{{ crumb.url }}"
+              class="text-[--text-color] hover:text-[--accent-color] font-medium transition truncate max-w-[10rem]">
+              {{ crumb.label }}
+            </a>
+            <span class="text-[--text-muted]">/</span>
+            {% else %}
+            <span class="font-medium text-[--text-color] truncate max-w-[12rem]" aria-current="page">
+              {{ crumb.label }}
+            </span>
+            {% endif %}
+          </li>
+          {% endfor %}
+          {% if crumb_list|length == 0 %}
+          <li>
+            <span class="font-medium text-[--text-color]" aria-current="page">
+              {{ breadcrumb_current|default('Dashboard') }}
+            </span>
+          </li>
+          {% endif %}
+        </ol>
+      </nav>
+    </div>
+
+    <!-- Right: Theme + Account -->
+    <ul class="flex items-center gap-2">
+      <!-- Theme Toggle -->
+      <li>
+        <button data-action="toggle-theme"
+          class="relative w-10 h-10 p-2 bg-[--bg-primary] border border-[--border-color] rounded-lg hover:bg-[--bg-tertiary] hover:border-[--accent-color] transition focus-ring shadow-sm"
+          aria-label="Toggle theme">
+          <i class="bi bi-sun-fill pointer-events-none theme-icon theme-icon-sun text-[--text-color]"></i>
+          <i class="bi bi-moon-stars-fill pointer-events-none theme-icon theme-icon-moon text-[--accent-color]"></i>
+        </button>
+      </li>
+
+      <!-- Account Dropdown -->
+      <li class="relative">
+        <button data-dropdown="account" aria-haspopup="true" aria-expanded="false"
+          class="p-0.5 rounded-full hover:bg-[--bg-tertiary] border-2 border-transparent hover:border-[--accent-color] focus-ring transition shadow-sm">
+          <img
+            src="{{ user.avatar_url if user else 'https://images.unsplash.com/photo-1659482633369-9fe69af50bfb?auto=format&fit=facearea&facepad=3&w=160&h=160&q=80' }}"
+            alt="User avatar" class="w-9 h-9 rounded-full object-cover">
+        </button>
+        <div data-dropdown-menu="account"
+          class="dropdown-panel hidden absolute right-0 top-full mt-2 min-w-[16rem] bg-[--bg-primary] border border-[--border-color] rounded-lg shadow-lg overflow-hidden">
+          <div class="p-3 bg-[--bg-secondary] border-b border-[--border-color]">
+            <p class="font-medium text-[--text-color] truncate">{{ user.name if user else 'User' }}</p>
+            <p class="text-xs text-[--text-muted] truncate">{{ user.email if user else 'user@example.com' }}</p>
+            <div class="mt-3">
+              <a href="#"
+                class="inline-flex items-center justify-center w-full px-3 py-1.5 text-xs font-medium text-white bg-[--accent-color] hover:bg-[--primary-hover] rounded-md transition shadow-sm">
+                <i class="bi bi-stars mr-1.5"></i>
+                Upgrade to Pro
+              </a>
+            </div>
+          </div>
+          <div class="p-1">
+            <a href="#"
+              class="flex items-center gap-2 px-3 py-2 text-sm text-[--text-color] hover:bg-[--bg-secondary] hover:text-[--accent-color] rounded-md transition">
+              <i class="bi bi-person"></i>
+              <span>Profile</span>
+            </a>
+            <a href="#"
+              class="flex items-center gap-2 px-3 py-2 text-sm text-[--text-color] hover:bg-[--bg-secondary] hover:text-[--accent-color] rounded-md transition">
+              <i class="bi bi-gear"></i>
+              <span>Settings</span>
+            </a>
+            <a href="#"
+              class="flex items-center gap-2 px-3 py-2 text-sm text-[--text-color] hover:bg-[--bg-secondary] hover:text-[--accent-color] rounded-md transition">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Log out</span>
+            </a>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  /* Dropdown Menu Styles */
+  .dropdown-panel {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .dropdown-panel.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* Theme Toggle Icons */
+  .theme-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  [data-theme="light"] .theme-icon-sun {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+
+  [data-theme="light"] .theme-icon-moon {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(180deg) scale(0);
+  }
+
+  [data-theme="dark"] .theme-icon-sun {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-180deg) scale(0);
+  }
+
+  [data-theme="dark"] .theme-icon-moon {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+
+  /* Sidebar Toggle Icons */
+  button[data-toggle="sidebar"] .toggle-icon[data-state="closed"] {
+    display: block;
+  }
+
+  button[data-toggle="sidebar"] .toggle-icon[data-state="open"] {
+    display: none;
+  }
+
+  button[data-toggle="sidebar"][aria-expanded="true"] .toggle-icon[data-state="closed"] {
+    display: none;
+  }
+
+  button[data-toggle="sidebar"][aria-expanded="true"] .toggle-icon[data-state="open"] {
+    display: block;
+  }
+
+  /* Focus Ring Utility */
+  .focus-ring {
+    outline: none;
+  }
+
+  .focus-ring:focus-visible {
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+</style>

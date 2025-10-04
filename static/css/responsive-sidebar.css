@@ -1,0 +1,117 @@
+:root {
+    --sidebar-rail-width: 72px;
+    --sidebar-full-width: 18rem;
+    --sidebar-transition: 240ms cubic-bezier(.4, 0, .2, 1);
+    --content-left-offset: 0;
+    --content-max-width: var(--injected-content-max-width, 1280px);
+}
+
+body {
+    --scrollbar-bg: transparent;
+}
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    background: var(--sidebar-bg, #121212);
+    color: var(--sidebar-fg, #fff);
+    width: var(--sidebar-full-width);
+    display: flex;
+    flex-direction: column;
+    z-index: 60;
+    transition:
+        transform var(--sidebar-transition),
+        width var(--sidebar-transition),
+        box-shadow var(--sidebar-transition);
+    will-change: transform, width;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+/* Overlay (mobile) */
+.layout--overlay #sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-full-width);
+}
+
+.layout--overlay.sidebar-open #sidebar,
+.layout--overlay #sidebar.is-active {
+    transform: translateX(0);
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45);
+}
+
+/* Rail (narrow desktop) */
+.layout--rail #sidebar {
+    transform: translateX(0);
+    width: var(--sidebar-rail-width);
+    box-shadow: none;
+    overflow: hidden;
+}
+
+/* Full (wide desktop) */
+.layout--sidebar #sidebar {
+    transform: translateX(0);
+    width: var(--sidebar-full-width);
+}
+
+/* Optional collapsed styling if you later add collapse logic */
+.sidebar-closed.layout--sidebar #sidebar {
+    width: var(--sidebar-rail-width);
+}
+
+/* Content shifting */
+main,
+.app-main,
+.app-content,
+#app-content,
+[data-app-content] {
+    transition: margin-left var(--sidebar-transition);
+    margin-left: var(--content-left-offset);
+}
+
+/* Centered max width container (wrap your page body) */
+.max-width-container {
+    max-width: var(--content-max-width);
+    margin-inline: auto;
+    width: 100%;
+    padding-inline: clamp(1rem, 2vw, 2rem);
+}
+
+/* Smooth fade for icon/text inside rail */
+.layout--rail #sidebar .nav-label,
+.sidebar-closed #sidebar .nav-label {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--sidebar-transition);
+}
+
+.layout--sidebar #sidebar .nav-label,
+.layout--overlay #sidebar .nav-label,
+.sidebar-open #sidebar .nav-label {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Scroll containment */
+#sidebar .nav-scroll {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Accessibility focus */
+#sidebar a:focus-visible {
+    outline: 2px solid var(--focus-color, #6ea8fe);
+    outline-offset: 2px;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+
+    #sidebar,
+    main,
+    .app-main,
+    .app-content {
+        transition: none !important;
+    }
+}

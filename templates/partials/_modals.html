@@ -1,0 +1,102 @@
+<!-- Search Modal -->
+<div role="dialog"
+     aria-modal="true"
+     aria-labelledby="search-modal-title"
+     class="modal hidden"
+     data-modal="search">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-content max-w-3xl">
+    <header class="modal-header">
+      <h2 id="search-modal-title" class="flex items-center gap-2 text-xl font-semibold">
+        <i class="bi bi-search text-[--accent-color]"></i> Search
+      </h2>
+      <button class="modal-close" data-close-modal aria-label="Close search">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <div class="p-5 space-y-5">
+      <div class="flex items-center gap-3">
+        <input type="text"
+               data-search-input
+               placeholder="Search anything..."
+               class="flex-1 px-3 py-2 rounded-md bg-[--bg-tertiary] border border-[--border-color] focus-ring focus:border-[--accent-color] placeholder:text-[--text-muted]">
+        <kbd class="text-xs px-2 py-1 rounded bg-[--bg-secondary] border border-[--border-color]">ESC</kbd>
+      </div>
+      <div class="space-y-2 max-h-80 overflow-y-auto scrollbar-thin" data-search-results>
+        <p class="text-center text-[--text-muted] py-8">Start typing to search...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- What's New Modal -->
+<div role="dialog"
+     aria-modal="true"
+     aria-labelledby="whats-new-title"
+     class="modal hidden"
+     data-modal="whats-new">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-content max-w-xl">
+    <header class="modal-header">
+      <h2 id="whats-new-title" class="flex items-center gap-2 text-xl font-semibold">
+        <i class="bi bi-stars text-[--accent-color]"></i> What's New
+      </h2>
+      <button class="modal-close" data-close-modal aria-label="Close What's New">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <div class="p-6 space-y-4 text-[--text-body]" data-modal-scroll>
+      <div class="feature-card border-l-4 border-[--accent-color]">
+        <div class="badge-new">New</div>
+        <h3 class="feature-title">Enhanced Bot Controls</h3>
+        <p>Real-time remote control access for all bots with status indicators.</p>
+      </div>
+      <div class="feature-card border-l-4 border-[--accent-color]">
+        <div class="badge-improved">Improved</div>
+        <h3 class="feature-title">Dark Mode Theme</h3>
+        <p>Smoother transitions, improved contrast, and glass UI effects.</p>
+      </div>
+      <div class="feature-card border-l-4 border-[--accent-color]">
+        <div class="badge-feature">Feature</div>
+        <h3 class="feature-title">Advanced Search</h3>
+        <p>Command palette with fuzzy search. Press ⌘K to try it!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help Modal -->
+<div role="dialog"
+     aria-modal="true"
+     aria-labelledby="help-title"
+     class="modal hidden"
+     data-modal="help">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-content max-w-xl">
+    <header class="modal-header">
+      <h2 id="help-title" class="flex items-center gap-2 text-xl font-semibold">
+        <i class="bi bi-question-circle text-[--accent-color]"></i> Help & Support
+      </h2>
+      <button class="modal-close" data-close-modal aria-label="Close Help & Support">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <div class="p-6 space-y-5" data-modal-scroll>
+      <section class="support-card">
+        <h3><i class="bi bi-book text-[--accent-color]"></i> Documentation</h3>
+        <p>Browse guides and API references.</p>
+        <a href="#" class="link-accent">View Documentation →</a>
+      </section>
+      <section class="support-card">
+        <h3><i class="bi bi-chat-dots text-[--accent-color]"></i> Contact Support</h3>
+        <p>Our team is available 24/7 to assist you.</p>
+        <a href="#" class="link-accent">Contact Support →</a>
+      </section>
+      <section class="support-card">
+        <h3><i class="bi bi-life-preserver text-[--accent-color]"></i> FAQs</h3>
+        <p>Quick answers to common questions.</p>
+        <a href="#" class="link-accent">Browse FAQs →</a>
+      </section>
+    </div>
+  </div>
+</div>

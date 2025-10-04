@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+*.env
+.env
+.env.*
+
+# Cache / tooling
+.cache/
+.mypy_cache/
+.pytest_cache/
+coverage.xml
+htmlcov/
+.coverage*
+pip-wheel-metadata/
+
+# Logs & dumps
+*.log
+*.sqlite3
+
+# Frontend (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Compiled assets (optional – remove if you want them tracked)
+*.min.css.map
+*.min.js.map
+
+# Misc
+*.bak

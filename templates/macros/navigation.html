@@ -1,0 +1,18 @@
+{% macro nav_section(title, items) %}
+<div class="nav-section">
+  <span class="nav-section-label">{{ title }}</span>
+  <ul class="flex flex-col gap-1">
+    {% for item in items %}
+      <li>
+        <a href="{{ item.href }}"
+           class="nav-link {{ 'active' if item.active }}"
+           data-nav-link
+           {{ 'aria-current=page' if item.active }}>
+          <i class="bi {{ item.icon }}"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endmacro %}

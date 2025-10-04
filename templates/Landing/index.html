@@ -1,0 +1,1285 @@
+{% extends "base.html" %}
+
+{% block title %}Home · ReckonBot{% endblock %}
+
+{# Hero substitutes page header #}
+{% block page_header %}{% endblock %}
+
+{% block content %}
+<style>
+    /* NOTE: Page-specific animations and styles are kept here. 
+       Global theme variables (colors, fonts, etc.) are now exclusively handled by global.css
+       to avoid redundancy and conflicts.
+    */
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes letterSpacing {
+
+        0%,
+        100% {
+            letter-spacing: 0.02em;
+        }
+
+        50% {
+            letter-spacing: 0.08em;
+        }
+    }
+
+    @keyframes pulseGlowOrange {
+
+        0%,
+        100% {
+            box-shadow: 0 0 25px rgba(255, 107, 53, 0.6), 0 0 50px rgba(255, 107, 53, 0.4), 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        50% {
+            box-shadow: 0 0 40px rgba(255, 107, 53, 0.8), 0 0 80px rgba(255, 107, 53, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-15px);
+        }
+    }
+
+    @keyframes particle {
+        0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 0.8;
+        }
+
+        90% {
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: translateY(-80vh) translateX(50px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes waveMove {
+        0% {
+            transform: translateX(0);
+        }
+
+        50% {
+            transform: translateX(-25%);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes iconBounce {
+
+        0%,
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+
+        50% {
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+
+    @keyframes borderPulse {
+
+        0%,
+        100% {
+            border-color: rgba(255, 107, 53, 0.4);
+        }
+
+        50% {
+            border-color: rgba(255, 107, 53, 1);
+        }
+    }
+
+    /* Particle Background */
+    .particle-container {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 50%;
+        animation: particle linear infinite;
+        will-change: transform, opacity;
+    }
+
+    .particle:nth-child(1) {
+        left: 15%;
+        animation-duration: 12s;
+        animation-delay: 0s;
+    }
+
+    .particle:nth-child(2) {
+        left: 35%;
+        animation-duration: 15s;
+        animation-delay: 2s;
+    }
+
+    .particle:nth-child(3) {
+        left: 55%;
+        animation-duration: 14s;
+        animation-delay: 4s;
+    }
+
+    .particle:nth-child(4) {
+        left: 75%;
+        animation-duration: 16s;
+        animation-delay: 6s;
+    }
+
+    /* Section Glow Overlay */
+    .section-glow {
+        position: relative;
+    }
+
+    .section-glow::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255, 107, 53, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Gradient Backgrounds */
+    .gradient-warm {
+        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-light) 50%, var(--brand-accent) 100%);
+    }
+
+    .gradient-coral {
+        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--accent-hover) 50%, #FF6347 100%);
+    }
+
+    .gradient-amber {
+        background: linear-gradient(135deg, var(--brand-accent) 0%, #FF8C00 50%, var(--brand-primary) 100%);
+    }
+
+    /* Wave Divider */
+    .wave-divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200%;
+        overflow: hidden;
+        line-height: 0;
+        animation: waveMove 20s linear infinite;
+    }
+
+    .wave-divider svg {
+        position: relative;
+        display: block;
+        width: calc(100% + 1.3px);
+        height: 80px;
+    }
+
+    .wave-divider .shape-fill {
+        fill: var(--bg-secondary);
+    }
+
+    /* Animated Typography */
+    .animated-heading {
+        animation: letterSpacing 3s ease-in-out infinite;
+        font-weight: var(--font-extrabold);
+        letter-spacing: 0.02em;
+    }
+
+    /* Hover Icon Animation */
+    .animated-icon {
+        transition: all 0.3s ease;
+    }
+
+    .animated-icon:hover {
+        animation: iconBounce 0.6s ease-in-out;
+    }
+
+    /* Glowing Border */
+    .glow-border {
+        border: 2px solid rgba(255, 107, 53, 0.4);
+        animation: borderPulse 2s ease-in-out infinite;
+    }
+
+    /* CTA Pulse */
+    .cta-primary {
+        animation: pulseGlowOrange 2s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-primary::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .cta-primary:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .cta-primary:hover {
+        animation: none;
+        box-shadow: 0 0 45px rgba(255, 107, 53, 0.9), 0 0 90px rgba(255, 107, 53, 0.6), 0 10px 30px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px) scale(1.02);
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .feature-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), transparent);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        border-radius: inherit;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(255, 107, 53, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Badge Styles */
+    .badge-new {
+        display: inline-block;
+        padding: 4px 12px;
+        background: linear-gradient(135deg, var(--brand-primary), var(--accent-hover));
+        color: var(--text-inverse);
+        font-size: 0.7rem;
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-radius: var(--radius-full);
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+    }
+
+    .badge-popular {
+        background: linear-gradient(135deg, var(--brand-accent), #FF8C00);
+    }
+
+    /* Floating Action Button */
+    .fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--brand-primary), var(--accent-hover));
+        color: var(--text-inverse);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+        cursor: pointer;
+        z-index: var(--z-fixed);
+        transition: all 0.3s ease;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 30px rgba(255, 107, 53, 0.7);
+    }
+
+    /* Sticky Navigation */
+    .sticky-nav {
+        position: fixed;
+        top: -100px;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        border-bottom: 1px solid var(--border-primary);
+        padding: 1rem 0;
+        z-index: var(--z-sticky);
+        transition: top 0.3s ease, background 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .sticky-nav {
+        background: rgba(18, 22, 24, 0.95);
+    }
+
+    .sticky-nav.visible {
+        top: 0;
+    }
+
+    .sticky-nav.scrolled {
+        background: var(--bg-surface);
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+    }
+
+    /* Testimonial Carousel */
+    .carousel-container {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .carousel-track {
+        display: flex;
+        transition: transform 0.5s ease;
+    }
+
+    .testimonial-card {
+        min-width: 100%;
+        padding: 2rem;
+    }
+
+    /* Content Reveal Animation */
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Responsive Fixes */
+    @media (max-width: 768px) {
+        .fab {
+            bottom: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+        }
+
+        .section-glow::before {
+            width: 300px;
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .particle-container {
+            display: none;
+            /* Disable particles on small screens for performance */
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .cta-primary,
+        .feature-card,
+        .fab,
+        .animated-heading,
+        .particle,
+        .wave-divider {
+            animation: none !important;
+            transition: none !important;
+        }
+    }
+</style>
+<section id="hero" class="relative overflow-hidden pb-32 pt-2" aria-labelledby="hero-heading">
+    <div class="particle-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <section id="hero" class="relative overflow-hidden bg-cover bg-center pt-32 pb-32"
+        style="background-image: url('https://plus.unsplash.com/premium_photo-1739538279172-9bd4d900e60e?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"
+        aria-labelledby="hero-heading">
+
+        <div class="absolute inset-0 bg-black/60"></div>
+
+        <div class="relative max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
+            <header class="relative z-10 text-center max-w-4xl mx-auto">
+                <div class="flex justify-center mb-8 reveal">
+                    <a href="#contact"
+                        class="inline-flex items-center gap-x-2 rounded-full bg-slate-800/50 border border-[--accent-color] text-sm text-white ps-3 pe-1 py-1.5 font-medium transition hover:bg-[--accent-hover] hover:text-white hover:shadow-lg"
+                        aria-label="Join PRO waitlist">
+                        <span class="badge-new">NEW</span>
+                        <span>PRO Release – Join the waitlist</span>
+                        <span
+                            class="inline-flex items-center justify-center rounded-full bg-[--accent-color] text-white w-7 h-7">
+                            <i class="bi bi-arrow-right text-xs"></i>
+                        </span>
+                    </a>
+                </div>
+
+                <h1 id="hero-heading"
+                    class="animated-heading font-extrabold tracking-tight text-5xl md:text-6xl lg:text-7xl text-white leading-tight reveal mb-8">
+                    Build Smarter <span class="inline-block"
+                        style="text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);">Together</span>
+                </h1>
+
+                <div class="reveal mt-8 space-y-3">
+                    <p class="text-xl md:text-2xl text-slate-100 font-semibold">
+                        Real-time control, observability, and automation
+                    </p>
+                    <p class="text-base md:text-lg text-slate-200/90 leading-relaxed max-w-2xl mx-auto">
+                        ReckonBot unifies intelligent bot operations with a modular design system built for clarity,
+                        speed,
+                        and scale.
+                    </p>
+                </div>
+
+                <div class="reveal mt-10 flex flex-wrap justify-center gap-4">
+                    <a href="#features"
+                        class="cta-primary inline-flex items-center gap-x-2 rounded-lg bg-[--accent-color] text-white text-base font-bold py-4 px-8 transition focus-ring relative z-10 hover:shadow-2xl"
+                        aria-label="Get Started">
+                        <span>Get Started</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <button type="button"
+                        class="group inline-flex items-center gap-x-3 font-mono text-sm rounded-lg border-2 border-white/50 bg-slate-800/80 text-white py-3.5 px-6 hover:bg-[--accent-hover] hover:border-white transition focus-ring"
+                        aria-label="Install ReckonBot">
+                        <span class="select-all">$ pip install reckonbot</span>
+                        <span class="flex justify-center items-center bg-[--accent-color] rounded-md w-8 h-8">
+                            <i class="bi bi-terminal"></i>
+                        </span>
+                    </button>
+                </div>
+
+                <div
+                    class="reveal mt-8 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 text-sm text-white">
+                    <div class="flex gap-2 items-center">
+                        <span class="text-slate-200/80">Language:</span>
+                        <span
+                            class="font-semibold px-3 py-1 bg-slate-700/50 text-white rounded-full border border-[--accent-color]">Python</span>
+                    </div>
+                    <span class="hidden sm:inline text-white/60">•</span>
+                    <a href="#installation"
+                        class="inline-flex items-center gap-x-1.5 text-white hover:text-[--accent-color] font-medium decoration-2 hover:underline transition"
+                        aria-label="Installation Guide">
+                        Installation Guide
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </header>
+        </div>
+    </section>
+
+    <div class="wave-divider">
+        <svg data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+                class="shape-fill" style="fill: var(--accent-color);"></path>
+        </svg>
+    </div>
+</section>
+
+
+<section id="features" class="relative py-20 bg-[--bg-secondary] section-glow" aria-labelledby="features-heading">
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header class="mb-14 text-center max-w-2xl mx-auto reveal">
+            <h2 id="features-heading" class="text-3xl md:text-4xl font-bold text-[--text-color] mb-4">
+                Platform Features
+            </h2>
+            <p class="text-base md:text-lg text-[--text-muted] leading-relaxed">
+                A focused, extensible toolkit to accelerate bot lifecycle management and orchestration.
+            </p>
+        </header>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <article
+                class="feature-card reveal group flex flex-col rounded-2xl border border-[--border-color] bg-[--bg-primary] p-7 hover:border-[--accent-color] transition shadow-md">
+                <div
+                    class="flex items-center justify-center w-14 h-14 rounded-xl bg-[--accent-color] text-white shadow-md group-hover:shadow-xl transition animated-icon">
+                    <i class="bi bi-arrows-fullscreen text-xl"></i>
+                </div>
+                <span class="badge-new mt-4">POPULAR</span>
+                <h3 class="mt-3 text-xl font-bold text-[--text-color] group-hover:text-[--accent-color] transition">
+                    Responsive
+                </h3>
+                <p class="mt-3 text-sm text-[--text-muted] leading-relaxed flex-grow">
+                    Adaptive layouts that scale smoothly from mobile ops panels to widescreen control rooms.
+                </p>
+                <a href="#"
+                    class="mt-5 inline-flex items-center gap-x-2 text-sm text-[--accent-color] group-hover:underline font-medium transition">
+                    Learn more <i class="bi bi-arrow-right"></i>
+                </a>
+            </article>
+
+            <article
+                class="feature-card reveal group flex flex-col rounded-2xl border border-[--border-color] bg-[--bg-primary] p-7 hover:border-[--accent-color] transition shadow-md"
+                style="transition-delay: 0.1s">
+                <div
+                    class="flex items-center justify-center w-14 h-14 rounded-xl bg-[--accent-color] text-white shadow-md group-hover:shadow-xl transition animated-icon">
+                    <i class="bi bi-sliders text-xl"></i>
+                </div>
+                <h3 class="mt-6 text-xl font-bold text-[--text-color] group-hover:text-[--accent-color] transition">
+                    Customizable
+                </h3>
+                <p class="mt-3 text-sm text-[--text-muted] leading-relaxed flex-grow">
+                    Token-driven theming & modular components streamline tailored deployments.
+                </p>
+                <a href="#"
+                    class="mt-5 inline-flex items-center gap-x-2 text-sm text-[--accent-color] group-hover:underline font-medium transition">
+                    Learn more <i class="bi bi-arrow-right"></i>
+                </a>
+            </article>
+
+            <article
+                class="feature-card reveal group flex flex-col rounded-2xl border border-[--border-color] bg-[--bg-primary] p-7 hover:border-[--accent-color] transition shadow-md"
+                style="transition-delay: 0.2s">
+                <div
+                    class="flex items-center justify-center w-14 h-14 rounded-xl bg-[--accent-color] text-white shadow-md group-hover:shadow-xl transition animated-icon">
+                    <i class="bi bi-journal-code text-xl"></i>
+                </div>
+                <span class="badge-new badge-popular mt-4">NEW</span>
+                <h3 class="mt-3 text-xl font-bold text-[--text-color] group-hover:text-[--accent-color] transition">
+                    Documentation
+                </h3>
+                <p class="mt-3 text-sm text-[--text-muted] leading-relaxed flex-grow">
+                    Concise guides & API schemas reduce onboarding friction for rapid deployment.
+                </p>
+                <a href="#"
+                    class="mt-5 inline-flex items-center gap-x-2 text-sm text-[--accent-color] group-hover:underline font-medium transition">
+                    Learn more <i class="bi bi-arrow-right"></i>
+                </a>
+            </article>
+
+            <article
+                class="feature-card reveal group flex flex-col rounded-2xl border border-[--border-color] bg-[--bg-primary] p-7 hover:border-[--accent-color] transition shadow-md"
+                style="transition-delay: 0.3s">
+                <div
+                    class="flex items-center justify-center w-14 h-14 rounded-xl bg-[--accent-color] text-white shadow-md group-hover:shadow-xl transition animated-icon">
+                    <i class="bi bi-headset text-xl"></i>
+                </div>
+                <h3 class="mt-6 text-xl font-bold text-[--text-color] group-hover:text-[--accent-color] transition">
+                    24/7 Support
+                </h3>
+                <p class="mt-3 text-sm text-[--text-muted] leading-relaxed flex-grow">
+                    Always-on escalation with domain specialists for critical workflows and incidents.
+                </p>
+                <a href="#"
+                    class="mt-5 inline-flex items-center gap-x-2 text-sm text-[--accent-color] group-hover:underline font-medium transition">
+                    Learn more <i class="bi bi-arrow-right"></i>
+                </a>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section id="testimonials" class="py-20 bg-[--bg-primary] relative overflow-hidden section-glow"
+    aria-labelledby="testimonials-heading">
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header class="mb-12 text-center reveal">
+            <h2 id="testimonials-heading" class="text-3xl md:text-4xl font-bold text-[--text-color] mb-3">
+                What Our Users Say
+            </h2>
+            <p class="text-base text-[--text-muted]">
+                Real experiences from teams scaling bot operations globally.
+            </p>
+        </header>
+
+        <div class="carousel-container max-w-4xl mx-auto">
+            <div class="carousel-track" id="testimonialTrack">
+                <div class="testimonial-card glow-border bg-[--bg-tertiary] rounded-2xl shadow-lg">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=100&h=100&q=80"
+                            alt="Alex Chen" class="w-16 h-16 rounded-full" loading="lazy">
+                        <div>
+                            <h4 class="font-bold text-[--text-color]">Alex Chen</h4>
+                            <p class="text-sm text-[--text-muted]">CTO, TechFlow</p>
+                        </div>
+                    </div>
+                    <p class="text-[--text-body] leading-relaxed italic">
+                        "ReckonBot transformed how we manage our bot infrastructure. The real-time monitoring and
+                        control features saved us countless hours of manual intervention."
+                    </p>
+                </div>
+
+                <div class="testimonial-card glow-border bg-[--bg-tertiary] rounded-2xl shadow-lg">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=100&h=100&q=80"
+                            alt="Sarah Martinez" class="w-16 h-16 rounded-full" loading="lazy">
+                        <div>
+                            <h4 class="font-bold text-[--text-color]">Sarah Martinez</h4>
+                            <p class="text-sm text-[--text-muted]">Lead Engineer, DataSync</p>
+                        </div>
+                    </div>
+                    <p class="text-[--text-body] leading-relaxed italic">
+                        "The modular design and customization options made integration seamless. We're now managing 50+
+                        bots with unprecedented clarity and efficiency."
+                    </p>
+                </div>
+
+                <div class="testimonial-card glow-border bg-[--bg-tertiary] rounded-2xl shadow-lg">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2&w=100&h=100&q=80"
+                            alt="Michael Park" class="w-16 h-16 rounded-full" loading="lazy">
+                        <div>
+                            <h4 class="font-bold text-[--text-color]">Michael Park</h4>
+                            <p class="text-sm text-[--text-muted]">Operations Director, AutoScale</p>
+                        </div>
+                    </div>
+                    <p class="text-[--text-body] leading-relaxed italic">
+                        "Best bot management platform we've used. The 24/7 support team is incredibly responsive, and
+                        the platform scales effortlessly with our growing needs."
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-2 mt-6">
+                <button id="prevBtn"
+                    class="w-10 h-10 rounded-full bg-[--accent-color] text-white flex items-center justify-center hover:bg-[--primary-hover] transition focus-ring"
+                    aria-label="Previous Testimonial">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button id="nextBtn"
+                    class="w-10 h-10 rounded-full bg-[--accent-color] text-white flex items-center justify-center hover:bg-[--primary-hover] transition focus-ring"
+                    aria-label="Next Testimonial">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="insights" class="py-20 bg-[--bg-secondary] section-glow" aria-labelledby="insights-heading">
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header class="mb-12 reveal">
+            <h2 id="insights-heading" class="text-3xl md:text-4xl font-bold text-[--text-color] mb-3">
+                Culture & Insights
+            </h2>
+            <p class="text-base text-[--text-muted]">
+                Perspectives shaping the ReckonBot ecosystem and our approach to innovation.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1606868306217-dbf5046868d2?auto=format&fit=crop&w=960&q=80"
+                        alt="Workplace collaboration" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <span class="badge-new mb-3">TRENDING</span>
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Workplace Personalities
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Understanding team dynamics for better collaboration
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all"
+                style="transition-delay: 0.1s">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1605629921711-2f6b00c6bbf4?auto=format&fit=crop&w=960&q=80"
+                        alt="Women in engineering" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Women in Engineering
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Celebrating diversity and innovation in tech
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all"
+                style="transition-delay: 0.2s">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1606836576983-8b458e75221d?auto=format&fit=crop&w=960&q=80"
+                        alt="Pride initiatives" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <span class="badge-new badge-popular mb-3">FEATURED</span>
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Pride Initiatives
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Building inclusive workspaces for everyone
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all"
+                style="transition-delay: 0.3s">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1598929438701-ef29ab0bb61a?auto=format&fit=crop&w=960&q=80"
+                        alt="Data at ReckonBot" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Data at ReckonBot
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        How we leverage data for operational intelligence
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all"
+                style="transition-delay: 0.4s">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1467043153537-a4fba2cd39ef?auto=format&fit=crop&w=960&q=80"
+                        alt="Empowered management" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Empowered Management
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Leadership principles for distributed teams
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article
+                class="reveal insight-card group relative block rounded-2xl overflow-hidden border border-[--border-color] shadow-md hover:shadow-xl transition-all"
+                style="transition-delay: 0.5s">
+                <div class="aspect-w-16 aspect-h-10 overflow-hidden">
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=960&q=80"
+                        alt="Team collaboration" loading="lazy">
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-0 inset-x-0 p-5">
+                    <h3 class="text-base md:text-lg font-semibold text-white mb-2">
+                        Remote Collaboration
+                    </h3>
+                    <p
+                        class="text-sm text-white/90 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Tools and practices for distributed success
+                    </p>
+                    <a href="#"
+                        class="inline-flex items-center gap-x-1 text-sm text-white font-medium hover:text-[--accent-color] transition opacity-0 group-hover:opacity-100">
+                        Read article <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden" style="line-height: 0;">
+            <svg viewBox="0 0 1200 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+                style="width: 100%; height: 60px;">
+                <polygon points="0,60 1200,0 1200,60" style="fill: var(--bg-primary);"></polygon>
+            </svg>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="py-20 bg-[--bg-primary] relative section-glow" aria-labelledby="about-heading">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <header class="mb-10 text-center reveal">
+            <h2 id="about-heading" class="text-3xl md:text-4xl font-bold text-[--text-color] mb-4">About ReckonBot</h2>
+            <p class="text-lg text-[--text-muted]">Unified platform for intelligent bot operations</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 gap-10 mb-12">
+            <div
+                class="reveal bg-gradient-to-br from-[--bg-tertiary] to-[--bg-secondary] p-8 rounded-2xl border border-[--border-color] shadow-lg hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-[--accent-color] flex items-center justify-center animated-icon">
+                        <i class="bi bi-diagram-3 text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-[--text-color]">
+                        Platform Overview
+                    </h3>
+                </div>
+                <p class="text-[--text-body] leading-relaxed">
+                    ReckonBot streamlines complex bot ecosystems by centralizing observability, control, and deployment
+                    workflows. Our component-first architecture lets teams iterate faster without sacrificing
+                    reliability or governance standards.
+                </p>
+            </div>
+
+            <div class="reveal bg-gradient-to-br from-[--bg-tertiary] to-[--bg-secondary] p-8 rounded-2xl border border-[--border-color] shadow-lg hover:shadow-2xl transition-all duration-300"
+                style="transition-delay: 0.1s">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-[--accent-color] flex items-center justify-center animated-icon">
+                        <i class="bi bi-lightning-charge text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-[--text-color]">
+                        Integration & Scale
+                    </h3>
+                </div>
+                <p class="text-[--text-body] leading-relaxed">
+                    Designed for scale, the platform integrates with existing telemetry, CI/CD pipelines, and edge
+                    schedulers. The result: actionable insights, automated responses, and a cohesive UX that reduces
+                    operational overhead.
+                </p>
+            </div>
+        </div>
+
+        <div
+            class="reveal bg-gradient-to-br from-[--accent-color] to-[--primary-hover] p-10 rounded-2xl shadow-2xl text-white">
+            <h3 class="text-2xl font-bold mb-6 text-center">Core Capabilities</h3>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div
+                    class="flex items-start gap-3 hover:transform hover:translateX-2 transition-transform cursor-pointer">
+                    <i class="bi bi-lock-fill text-2xl mt-1"></i>
+                    <div>
+                        <p class="font-bold mb-1">Security-first design</p>
+                        <p class="text-xs text-white/80">End-to-end encryption & audit trails</p>
+                    </div>
+                </div>
+                <div
+                    class="flex items-start gap-3 hover:transform hover:translateX-2 transition-transform cursor-pointer">
+                    <i class="bi bi-lightning-charge-fill text-2xl mt-1"></i>
+                    <div>
+                        <p class="font-bold mb-1">Real-time orchestration</p>
+                        <p class="text-xs text-white/80">Sub-second response times</p>
+                    </div>
+                </div>
+                <div
+                    class="flex items-start gap-3 hover:transform hover:translateX-2 transition-transform cursor-pointer">
+                    <i class="bi bi-diagram-3-fill text-2xl mt-1"></i>
+                    <div>
+                        <p class="font-bold mb-1">Modular extensions</p>
+                        <p class="text-xs text-white/80">Plugin architecture for custom logic</p>
+                    </div>
+                </div>
+                <div
+                    class="flex items-start gap-3 hover:transform hover:translateX-2 transition-transform cursor-pointer">
+                    <i class="bi bi-graph-up-arrow text-2xl mt-1"></i>
+                    <div>
+                        <p class="font-bold mb-1">Operational analytics</p>
+                        <p class="text-xs text-white/80">AI-powered insights & forecasting</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="py-24 bg-[--bg-secondary] relative overflow-hidden section-glow"
+    aria-labelledby="contact-heading">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <header class="mb-10 reveal">
+            <h2 id="contact-heading" class="text-3xl md:text-4xl font-bold text-[--text-color] mb-4">
+                Ready to Accelerate Your Operations?
+            </h2>
+            <p class="text-base md:text-lg text-[--text-muted] max-w-2xl mx-auto leading-relaxed">
+                Reach out to explore custom integrations, enterprise deployment paths, or partnership opportunities.
+            </p>
+        </header>
+
+        <form
+            class="reveal mt-10 text-left bg-gradient-to-br from-[--bg-primary] to-[--bg-tertiary] p-8 md:p-10 rounded-2xl border-2 glow-border shadow-2xl"
+            id="contactForm" role="form" aria-describedby="formStatus">
+            <div class="grid gap-6 sm:grid-cols-2">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-2 text-[--text-color]"
+                        for="name">Name *</label>
+                    <input type="text" id="name" required
+                        class="form-input w-full rounded-lg border-2 border-[--border-color] bg-[--bg-secondary] px-4 py-3 text-sm text-[--text-color] focus-ring focus:border-[--accent-color] transition-all hover:border-[--accent-color]/50"
+                        placeholder="Jane Doe">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-2 text-[--text-color]"
+                        for="email">Email *</label>
+                    <input type="email" id="email" required
+                        class="form-input w-full rounded-lg border-2 border-[--border-color] bg-[--bg-secondary] px-4 py-3 text-sm text-[--text-color] focus-ring focus:border-[--accent-color] transition-all hover:border-[--accent-color]/50"
+                        placeholder="you@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-2 text-[--text-color]"
+                        for="company">Company</label>
+                    <input type="text" id="company"
+                        class="form-input w-full rounded-lg border-2 border-[--border-color] bg-[--bg-secondary] px-4 py-3 text-sm text-[--text-color] focus-ring focus:border-[--accent-color] transition-all hover:border-[--accent-color]/50"
+                        placeholder="Org / Team">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-2 text-[--text-color]"
+                        for="interest">Interest Area</label>
+                    <select id="interest"
+                        class="form-input w-full rounded-lg border-2 border-[--border-color] bg-[--bg-secondary] px-4 py-3 text-sm text-[--text-color] focus-ring focus:border-[--accent-color] transition-all hover:border-[--accent-color]/50">
+                        <option>Enterprise Deployment</option>
+                        <option>Custom Integration</option>
+                        <option>Partnership</option>
+                        <option>General Inquiry</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-2 text-[--text-color]"
+                        for="message">Message *</label>
+                    <textarea id="message" rows="5" required
+                        class="form-input w-full resize-y rounded-lg border-2 border-[--border-color] bg-[--bg-secondary] px-4 py-3 text-sm text-[--text-color] leading-relaxed focus-ring focus:border-[--accent-color] transition-all hover:border-[--accent-color]/50"
+                        placeholder="Tell us about your use case..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center">
+                <button type="submit"
+                    class="cta-primary inline-flex items-center gap-x-2 rounded-lg bg-[--accent-color] hover:bg-[--primary-hover] text-white text-base font-bold py-4 px-10 shadow-2xl transition-all focus-ring"
+                    aria-label="Send Inquiry">
+                    Send Inquiry
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+
+            <div id="formStatus" class="mt-4 text-center text-sm text-[--text-color]" role="alert"></div>
+        </form>
+    </div>
+</section>
+
+<footer class="mt-4 w-full bg-black py-16 relative overflow-hidden" aria-labelledby="footer-brand">
+    <div class="particle-container opacity-30">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-10">
+            <a id="footer-brand" href="{{ url_for('dashboard.index') }}"
+                class="text-2xl font-bold tracking-tight text-[--accent-color] hover:text-[--accent-hover] transition inline-block hover:scale-105">
+                ReckonBot
+            </a>
+            <p class="mt-4 text-base text-white/80 max-w-md mx-auto">
+                Built for real-time operational intelligence & autonomous control.
+            </p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+            <div class="footer-section">
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                    <i class="bi bi-box-seam text-[--accent-color]"></i>
+                    Product
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#features"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Features</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Pricing</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Documentation</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">API
+                            Reference</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                    <i class="bi bi-building text-[--accent-color]"></i>
+                    Company
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#about"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">About
+                            Us</a></li>
+                    <li><a href="#insights"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Blog</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Careers
+                            <span class="badge-new ml-2" style="font-size: 0.6rem;">HIRING</span></a></li>
+                    <li><a href="#contact"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Contact</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                    <i class="bi bi-book text-[--accent-color]"></i>
+                    Resources
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Community</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Support</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Status</a>
+                    </li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Changelog</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                    <i class="bi bi-shield-check text-[--accent-color]"></i>
+                    Legal
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Privacy
+                            Policy</a></li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Terms
+                            of Service</a></li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Cookie
+                            Policy</a></li>
+                    <li><a href="#"
+                            class="text-white/70 hover:text-[--accent-color] transition hover:translate-x-1 inline-block">Security</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-white/20 pt-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-white/60">
+                    © 2025 ReckonBot Labs. All rights reserved.
+                </p>
+                <div class="flex gap-3">
+                    <a href="#"
+                        class="w-10 h-10 inline-flex items-center justify-center rounded-full border-2 border-[--accent-color]/40 text-[--accent-color] hover:bg-[--accent-color] hover:text-black transition-all hover:scale-110 hover:rotate-6"
+                        aria-label="Twitter / X">
+                        <i class="bi bi-twitter-x text-sm"></i>
+                    </a>
+                    <a href="#"
+                        class="w-10 h-10 inline-flex items-center justify-center rounded-full border-2 border-[--accent-color]/40 text-[--accent-color] hover:bg-[--accent-color] hover:text-black transition-all hover:scale-110 hover:rotate-6"
+                        aria-label="GitHub">
+                        <i class="bi bi-github text-sm"></i>
+                    </a>
+                    <a href="#"
+                        class="w-10 h-10 inline-flex items-center justify-center rounded-full border-2 border-[--accent-color]/40 text-[--accent-color] hover:bg-[--accent-color] hover:text-black transition-all hover:scale-110 hover:rotate-6"
+                        aria-label="LinkedIn">
+                        <i class="bi bi-linkedin text-sm"></i>
+                    </a>
+                    <a href="#"
+                        class="w-10 h-10 inline-flex items-center justify-center rounded-full border-2 border-[--accent-color]/40 text-[--accent-color] hover:bg-[--accent-color] hover:text-black transition-all hover:scale-110 hover:rotate-6"
+                        aria-label="Discord">
+                        <i class="bi bi-discord text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Wait for the DOM to be fully loaded before running scripts
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- Sticky Navigation with Scroll Detection ---
+        const stickyNav = document.getElementById('stickyNav');
+        if (stickyNav) {
+            let lastScroll = 0;
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.scrollY;
+
+                if (currentScroll > 300) {
+                    stickyNav.classList.add('visible');
+                    stickyNav.classList.toggle('scrolled', currentScroll > 400);
+                } else {
+                    stickyNav.classList.remove('visible', 'scrolled');
+                }
+                lastScroll = currentScroll;
+            });
+        }
+
+        // --- Scroll Reveal Animation ---
+        const revealElements = document.querySelectorAll('.reveal');
+        if (revealElements.length > 0) {
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        revealObserver.unobserve(entry.target); // Performance boost
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            revealElements.forEach(el => revealObserver.observe(el));
+        }
+
+        // --- Testimonial Carousel ---
+        const track = document.getElementById('testimonialTrack');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (track && prevBtn && nextBtn) {
+            const testimonials = track.children;
+            let currentTestimonial = 0;
+            let autoSlideInterval;
+
+            const showTestimonial = (index) => {
+                track.style.transform = `translateX(-${index * 100}%)`;
+            };
+
+            const next = () => {
+                currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+                showTestimonial(currentTestimonial);
+            };
+
+            const prev = () => {
+                currentTestimonial = (currentTestimonial - 1 + testimonials.length) % testimonials.length;
+                showTestimonial(currentTestimonial);
+            };
+
+            const startAutoSlide = () => {
+                stopAutoSlide(); // Prevent multiple intervals
+                autoSlideInterval = setInterval(next, 5000);
+            };
+
+            const stopAutoSlide = () => {
+                clearInterval(autoSlideInterval);
+            };
+
+            nextBtn.addEventListener('click', () => {
+                next();
+                startAutoSlide(); // Reset timer on manual navigation
+            });
+
+            prevBtn.addEventListener('click', () => {
+                prev();
+                startAutoSlide(); // Reset timer on manual navigation
+            });
+
+            // Keyboard Accessibility
+            [prevBtn, nextBtn].forEach(button => {
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        button.click();
+                    }
+                });
+            });
+
+            startAutoSlide(); // Initial start
+        }
+
+        // --- Form Submission Handler ---
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            const formStatus = document.getElementById('formStatus');
+
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                formStatus.textContent = 'Sending...';
+                formStatus.style.color = 'var(--text-color)';
+                formStatus.hidden = false;
+
+                const formData = new FormData(contactForm);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    // Simulate API call (replace with actual fetch to your endpoint)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    formStatus.textContent = 'Inquiry sent successfully!';
+                    formStatus.style.color = 'var(--success)';
+                    contactForm.reset();
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    formStatus.textContent = 'Error sending inquiry. Please try again.';
+                    formStatus.style.color = 'var(--error)';
+                } finally {
+                    setTimeout(() => {
+                        formStatus.hidden = true;
+                    }, 5000);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% from "macros/navigation.html" import nav_section %}
+<aside id="sidebar"
+  class="sidebar fixed top-0 left-0 bottom-0 w-64 bg-[--bg-secondary] border-r border-[--border-color] transform -translate-x-full transition-transform duration-250 z-[--z-sticky]"
+  aria-label="Primary" data-sidebar>
+  <div class="flex flex-col h-full pt-14">
+    <div class="flex-1 p-3 overflow-y-auto scrollbar-thin">
+      <button data-open-modal="search" class="search-trigger">
+        <i class="bi bi-search"></i>
+        <span>Search</span>
+        <kbd class="shortcut">⌘K</kbd>
+      </button>
+
+      {% for section in nav_sections %}
+      {{ nav_section(section.title, section.items) }}
+      {% endfor %}
+    </div>
+
+    <footer class="p-3 border-t border-[--border-color]">
+      <ul class="flex flex-col gap-1">
+        <li>
+          <button data-open-modal="whats-new" class="nav-link !justify-start">
+            <i class="bi bi-stars"></i>
+            <span>What's new?</span>
+          </button>
+        </li>
+        <li>
+          <button data-open-modal="help" class="nav-link !justify-start">
+            <i class="bi bi-question-circle"></i>
+            <span>Help & support</span>
+          </button>
+        </li>
+      </ul>
+    </footer>
+  </div>
+</aside>
+<div class="backdrop" data-backdrop hidden></div>
