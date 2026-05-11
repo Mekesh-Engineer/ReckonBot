@@ -6,9 +6,13 @@ export class PerformanceMonitor {
   watch() {
     if (!this.enabled) return;
     window.addEventListener('load', () => {
-      const t = performance.timing;
-      const loadTime = t.loadEventEnd - t.navigationStart;
-      console.log(`✅ Dashboard loaded in ${loadTime}ms`);
+      const entries = performance.getEntriesByType('navigation');
+      const timing = entries.length ? entries[0] : null;
+      if (timing && timing.duration) {
+        console.log(`✅ Dashboard loaded in ${Math.round(timing.duration)}ms`);
+        return;
+      }
+      console.log(`✅ Dashboard loaded in ${Math.round(performance.now())}ms`);
     }, { once: true });
   }
 }

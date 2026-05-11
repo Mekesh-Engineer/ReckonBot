@@ -6,6 +6,17 @@
 // ===========================
 #include "board_config.h"
 
+// ===========================
+// Secure WiFi Credentials
+// ===========================
+// DO NOT hardcode credentials here. Use secrets.h which is ignored in Git.
+#if __has_include("secrets.h")
+  #include "secrets.h"
+#else
+  const char *ssid     = "YOUR_SSID_HERE";
+  const char *password = "YOUR_PASSWORD_HERE";
+#endif
+
 /*
   ------------------------------------------------------------------
   Bot 1 ESP32-CAM - Enhanced Dashboard Integration Firmware
@@ -27,25 +38,6 @@
   5. Update bot1.js with: CAMERA_STREAM_BASE = 'http://<IP>'
   6. Access stream: http://<IP>/stream
 */
-
-// ===========================
-// WiFi Configuration - UPDATE THESE!
-// ===========================
-const char *ssid     = "Mekesh";
-const char *password = "12345678";
-
-// ===========================
-// Static IP Configuration (RECOMMENDED)
-// ===========================
-#define BOT1_USE_STATIC_IP  // Comment out to use DHCP
-
-// Line 35-38 in esp32cam.ino - UPDATE THESE
-#ifdef BOT1_USE_STATIC_IP
-IPAddress BOT1_LOCAL_IP(10, 54, 239, 150);  // Changed from 192.168.1.150
-IPAddress BOT1_GATEWAY(10, 54, 239, 239);   // Changed from 192.168.1.1
-IPAddress BOT1_SUBNET(255, 255, 255, 0);    // Same
-IPAddress BOT1_DNS(10, 54, 239, 239);       // Changed from 192.168.1.1
-#endif
 
 // ===========================
 // Camera Performance Settings

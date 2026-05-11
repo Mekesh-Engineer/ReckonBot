@@ -9,8 +9,16 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "Mekesh";
-const char *password = "12345678";
+#ifndef WIFI_SSID
+#define WIFI_SSID "Mekesh"
+#endif
+
+#ifndef WIFI_PASSWORD
+#define WIFI_PASSWORD "12345678"
+#endif
+
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 
 void startCameraServer();
 void setupLedFlash();
@@ -106,25 +114,41 @@ void setup() {
   setupLedFlash();
 #endif
 
+  WiFi.setHostname("reckonbot-cam");
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
   Serial.print("WiFi connecting");
-  while (WiFi.status() != WL_CONNECTED) {
+  unsigned long startAttemptTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 20000) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
 
-  startCameraServer();
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nFailed to connect to WiFi. Please restart.");
+    // Wait for reboot or implement retry/fallback
+  } else {
+    Serial.println("");
+    Serial.println("WiFi connected");
+    startCameraServer();
 
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+    Serial.print("Camera Ready! Use 'http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("' to connect");
+  }
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
+  // Enhanced: Check WiFi connection and reconnect if dropped
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi lost, attempting to reconnect...");
+    WiFi.begin(ssid, password);
+    unsigned long startAttemptTime = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+      delay(500);
+      Serial.print(".");
+    }
+  }
   delay(10000);
 }

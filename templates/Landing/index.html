@@ -1,441 +1,17 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
+{% set page = 'landing' %}
 {% block title %}Home · ReckonBot{% endblock %}
 
 {# Hero substitutes page header #}
 {% block page_header %}{% endblock %}
 
 {% block content %}
-<style>
-    /* NOTE: Page-specific animations and styles are kept here. 
-       Global theme variables (colors, fonts, etc.) are now exclusively handled by global.css
-       to avoid redundancy and conflicts.
-    */
-
-    /* Animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes letterSpacing {
-
-        0%,
-        100% {
-            letter-spacing: 0.02em;
-        }
-
-        50% {
-            letter-spacing: 0.08em;
-        }
-    }
-
-    @keyframes pulseGlowOrange {
-
-        0%,
-        100% {
-            box-shadow: 0 0 25px rgba(255, 107, 53, 0.6), 0 0 50px rgba(255, 107, 53, 0.4), 0 6px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        50% {
-            box-shadow: 0 0 40px rgba(255, 107, 53, 0.8), 0 0 80px rgba(255, 107, 53, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25);
-        }
-    }
-
-    @keyframes float {
-
-        0%,
-        100% {
-            transform: translateY(0px);
-        }
-
-        50% {
-            transform: translateY(-15px);
-        }
-    }
-
-    @keyframes particle {
-        0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0;
-        }
-
-        10% {
-            opacity: 0.8;
-        }
-
-        90% {
-            opacity: 0.8;
-        }
-
-        100% {
-            transform: translateY(-80vh) translateX(50px);
-            opacity: 0;
-        }
-    }
-
-    @keyframes waveMove {
-        0% {
-            transform: translateX(0);
-        }
-
-        50% {
-            transform: translateX(-25%);
-        }
-
-        100% {
-            transform: translateX(-50%);
-        }
-    }
-
-    @keyframes iconBounce {
-
-        0%,
-        100% {
-            transform: scale(1) rotate(0deg);
-        }
-
-        50% {
-            transform: scale(1.1) rotate(5deg);
-        }
-    }
-
-    @keyframes borderPulse {
-
-        0%,
-        100% {
-            border-color: rgba(255, 107, 53, 0.4);
-        }
-
-        50% {
-            border-color: rgba(255, 107, 53, 1);
-        }
-    }
-
-    /* Particle Background */
-    .particle-container {
-        position: absolute;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    .particle {
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        background: rgba(255, 107, 53, 0.5);
-        border-radius: 50%;
-        animation: particle linear infinite;
-        will-change: transform, opacity;
-    }
-
-    .particle:nth-child(1) {
-        left: 15%;
-        animation-duration: 12s;
-        animation-delay: 0s;
-    }
-
-    .particle:nth-child(2) {
-        left: 35%;
-        animation-duration: 15s;
-        animation-delay: 2s;
-    }
-
-    .particle:nth-child(3) {
-        left: 55%;
-        animation-duration: 14s;
-        animation-delay: 4s;
-    }
-
-    .particle:nth-child(4) {
-        left: 75%;
-        animation-duration: 16s;
-        animation-delay: 6s;
-    }
-
-    /* Section Glow Overlay */
-    .section-glow {
-        position: relative;
-    }
-
-    .section-glow::before {
-        content: '';
-        position: absolute;
-        top: -80px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(255, 107, 53, 0.12) 0%, transparent 70%);
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    /* Gradient Backgrounds */
-    .gradient-warm {
-        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-light) 50%, var(--brand-accent) 100%);
-    }
-
-    .gradient-coral {
-        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--accent-hover) 50%, #FF6347 100%);
-    }
-
-    .gradient-amber {
-        background: linear-gradient(135deg, var(--brand-accent) 0%, #FF8C00 50%, var(--brand-primary) 100%);
-    }
-
-    /* Wave Divider */
-    .wave-divider {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 200%;
-        overflow: hidden;
-        line-height: 0;
-        animation: waveMove 20s linear infinite;
-    }
-
-    .wave-divider svg {
-        position: relative;
-        display: block;
-        width: calc(100% + 1.3px);
-        height: 80px;
-    }
-
-    .wave-divider .shape-fill {
-        fill: var(--bg-secondary);
-    }
-
-    /* Animated Typography */
-    .animated-heading {
-        animation: letterSpacing 3s ease-in-out infinite;
-        font-weight: var(--font-extrabold);
-        letter-spacing: 0.02em;
-    }
-
-    /* Hover Icon Animation */
-    .animated-icon {
-        transition: all 0.3s ease;
-    }
-
-    .animated-icon:hover {
-        animation: iconBounce 0.6s ease-in-out;
-    }
-
-    /* Glowing Border */
-    .glow-border {
-        border: 2px solid rgba(255, 107, 53, 0.4);
-        animation: borderPulse 2s ease-in-out infinite;
-    }
-
-    /* CTA Pulse */
-    .cta-primary {
-        animation: pulseGlowOrange 2s ease-in-out infinite;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .cta-primary::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .cta-primary:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    .cta-primary:hover {
-        animation: none;
-        box-shadow: 0 0 45px rgba(255, 107, 53, 0.9), 0 0 90px rgba(255, 107, 53, 0.6), 0 10px 30px rgba(0, 0, 0, 0.3);
-        transform: translateY(-3px) scale(1.02);
-    }
-
-    /* Feature Cards */
-    .feature-card {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-
-    .feature-card::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), transparent);
-        opacity: 0;
-        transition: opacity 0.4s ease;
-        border-radius: inherit;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(255, 107, 53, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .feature-card:hover::after {
-        opacity: 1;
-    }
-
-    /* Badge Styles */
-    .badge-new {
-        display: inline-block;
-        padding: 4px 12px;
-        background: linear-gradient(135deg, var(--brand-primary), var(--accent-hover));
-        color: var(--text-inverse);
-        font-size: 0.7rem;
-        font-weight: var(--font-bold);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-radius: var(--radius-full);
-        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
-    }
-
-    .badge-popular {
-        background: linear-gradient(135deg, var(--brand-accent), #FF8C00);
-    }
-
-    /* Floating Action Button */
-    .fab {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--brand-primary), var(--accent-hover));
-        color: var(--text-inverse);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
-        cursor: pointer;
-        z-index: var(--z-fixed);
-        transition: all 0.3s ease;
-        animation: float 3s ease-in-out infinite;
-    }
-
-    .fab:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 30px rgba(255, 107, 53, 0.7);
-    }
-
-    /* Sticky Navigation */
-    .sticky-nav {
-        position: fixed;
-        top: -100px;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.95);
-        border-bottom: 1px solid var(--border-primary);
-        padding: 1rem 0;
-        z-index: var(--z-sticky);
-        transition: top 0.3s ease, background 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    [data-theme="dark"] .sticky-nav {
-        background: rgba(18, 22, 24, 0.95);
-    }
-
-    .sticky-nav.visible {
-        top: 0;
-    }
-
-    .sticky-nav.scrolled {
-        background: var(--bg-surface);
-        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
-    }
-
-    /* Testimonial Carousel */
-    .carousel-container {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .carousel-track {
-        display: flex;
-        transition: transform 0.5s ease;
-    }
-
-    .testimonial-card {
-        min-width: 100%;
-        padding: 2rem;
-    }
-
-    /* Content Reveal Animation */
-    .reveal {
-        opacity: 0;
-        transform: translateY(30px);
-        transition: all 0.6s ease;
-    }
-
-    .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    /* Responsive Fixes */
-    @media (max-width: 768px) {
-        .fab {
-            bottom: 1rem;
-            right: 1rem;
-            width: 50px;
-            height: 50px;
-        }
-
-        .section-glow::before {
-            width: 300px;
-            height: 300px;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .particle-container {
-            display: none;
-            /* Disable particles on small screens for performance */
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-
-        .cta-primary,
-        .feature-card,
-        .fab,
-        .animated-heading,
-        .particle,
-        .wave-divider {
-            animation: none !important;
-            transition: none !important;
-        }
-    }
-</style>
+<noscript>
+    <div class="noscript-banner">
+        JavaScript is currently disabled in your browser. Some interactive features, UI animations, and controls may not work as expected.
+    </div>
+</noscript>
 <section id="hero" class="relative overflow-hidden pb-32 pt-2" aria-labelledby="hero-heading">
     <div class="particle-container">
         <div class="particle"></div>
@@ -444,7 +20,7 @@
         <div class="particle"></div>
     </div>
 
-    <section id="hero" class="relative overflow-hidden bg-cover bg-center pt-32 pb-32"
+    <div class="relative overflow-hidden bg-cover bg-center pt-32 pb-32"
         style="background-image: url('https://plus.unsplash.com/premium_photo-1739538279172-9bd4d900e60e?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"
         aria-labelledby="hero-heading">
 
@@ -457,7 +33,7 @@
                         class="inline-flex items-center gap-x-2 rounded-full bg-slate-800/50 border border-[--accent-color] text-sm text-white ps-3 pe-1 py-1.5 font-medium transition hover:bg-[--accent-hover] hover:text-white hover:shadow-lg"
                         aria-label="Join PRO waitlist">
                         <span class="badge-new">NEW</span>
-                        <span>PRO Release – Join the waitlist</span>
+                        <span>PRO Release â€“ Join the waitlist</span>
                         <span
                             class="inline-flex items-center justify-center rounded-full bg-[--accent-color] text-white w-7 h-7">
                             <i class="bi bi-arrow-right text-xs"></i>
@@ -499,6 +75,13 @@
                     </button>
                 </div>
 
+                <div class="reveal mt-6 flex justify-center">
+                    <div id="firmwareStatus" class="status-pill" data-endpoint="{{ firmware_endpoint|default('') }}"
+                        aria-live="polite">
+                        Firmware status: checking...
+                    </div>
+                </div>
+
                 <div
                     class="reveal mt-8 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 text-sm text-white">
                     <div class="flex gap-2 items-center">
@@ -506,7 +89,7 @@
                         <span
                             class="font-semibold px-3 py-1 bg-slate-700/50 text-white rounded-full border border-[--accent-color]">Python</span>
                     </div>
-                    <span class="hidden sm:inline text-white/60">•</span>
+                    <span class="hidden sm:inline text-white/60">â€¢</span>
                     <a href="#installation"
                         class="inline-flex items-center gap-x-1.5 text-white hover:text-[--accent-color] font-medium decoration-2 hover:underline transition"
                         aria-label="Installation Guide">
@@ -516,7 +99,7 @@
                 </div>
             </header>
         </div>
-    </section>
+    </div>
 
     <div class="wave-divider">
         <svg data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -1124,7 +707,7 @@
         <div class="border-t border-white/20 pt-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-xs text-white/60">
-                    © 2025 ReckonBot Labs. All rights reserved.
+                    Â© 2025 ReckonBot Labs. All rights reserved.
                 </p>
                 <div class="flex gap-3">
                     <a href="#"
@@ -1153,133 +736,8 @@
     </div>
 </footer>
 
-<script>
-    // Wait for the DOM to be fully loaded before running scripts
-    document.addEventListener('DOMContentLoaded', () => {
+{% endblock %}
 
-        // --- Sticky Navigation with Scroll Detection ---
-        const stickyNav = document.getElementById('stickyNav');
-        if (stickyNav) {
-            let lastScroll = 0;
-            window.addEventListener('scroll', () => {
-                const currentScroll = window.scrollY;
-
-                if (currentScroll > 300) {
-                    stickyNav.classList.add('visible');
-                    stickyNav.classList.toggle('scrolled', currentScroll > 400);
-                } else {
-                    stickyNav.classList.remove('visible', 'scrolled');
-                }
-                lastScroll = currentScroll;
-            });
-        }
-
-        // --- Scroll Reveal Animation ---
-        const revealElements = document.querySelectorAll('.reveal');
-        if (revealElements.length > 0) {
-            const revealObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
-                        revealObserver.unobserve(entry.target); // Performance boost
-                    }
-                });
-            }, {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            });
-
-            revealElements.forEach(el => revealObserver.observe(el));
-        }
-
-        // --- Testimonial Carousel ---
-        const track = document.getElementById('testimonialTrack');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        if (track && prevBtn && nextBtn) {
-            const testimonials = track.children;
-            let currentTestimonial = 0;
-            let autoSlideInterval;
-
-            const showTestimonial = (index) => {
-                track.style.transform = `translateX(-${index * 100}%)`;
-            };
-
-            const next = () => {
-                currentTestimonial = (currentTestimonial + 1) % testimonials.length;
-                showTestimonial(currentTestimonial);
-            };
-
-            const prev = () => {
-                currentTestimonial = (currentTestimonial - 1 + testimonials.length) % testimonials.length;
-                showTestimonial(currentTestimonial);
-            };
-
-            const startAutoSlide = () => {
-                stopAutoSlide(); // Prevent multiple intervals
-                autoSlideInterval = setInterval(next, 5000);
-            };
-
-            const stopAutoSlide = () => {
-                clearInterval(autoSlideInterval);
-            };
-
-            nextBtn.addEventListener('click', () => {
-                next();
-                startAutoSlide(); // Reset timer on manual navigation
-            });
-
-            prevBtn.addEventListener('click', () => {
-                prev();
-                startAutoSlide(); // Reset timer on manual navigation
-            });
-
-            // Keyboard Accessibility
-            [prevBtn, nextBtn].forEach(button => {
-                button.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        button.click();
-                    }
-                });
-            });
-
-            startAutoSlide(); // Initial start
-        }
-
-        // --- Form Submission Handler ---
-        const contactForm = document.getElementById('contactForm');
-        if (contactForm) {
-            const formStatus = document.getElementById('formStatus');
-
-            contactForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                formStatus.textContent = 'Sending...';
-                formStatus.style.color = 'var(--text-color)';
-                formStatus.hidden = false;
-
-                const formData = new FormData(contactForm);
-                const data = Object.fromEntries(formData.entries());
-
-                try {
-                    // Simulate API call (replace with actual fetch to your endpoint)
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    formStatus.textContent = 'Inquiry sent successfully!';
-                    formStatus.style.color = 'var(--success)';
-                    contactForm.reset();
-                } catch (error) {
-                    console.error('Form submission error:', error);
-                    formStatus.textContent = 'Error sending inquiry. Please try again.';
-                    formStatus.style.color = 'var(--error)';
-                } finally {
-                    setTimeout(() => {
-                        formStatus.hidden = true;
-                    }, 5000);
-                }
-            });
-        }
-    });
-</script>
+{% block scripts_extra %}
+<script type="module" src="{{ url_for('static', filename='js/modules/landing.js') }}"></script>
 {% endblock %}

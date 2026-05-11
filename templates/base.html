@@ -2,16 +2,39 @@
 <html lang="{{ lang|default('en') }}" data-theme="{{ theme|default('dark') }}">
 
 <head>
-  {% macro attr(bool_val, true_val, false_val='') %}{{ true_val if bool_val else false_val }}{% endmacro %}
-  {% include "partials/_meta.html" %}
-  <title>{% block title %}FlowGateX Dashboard{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
-  {% block head_extra %}{% endblock %}
-  {% block scripts_head %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="{{ meta_description|default('ReckonBot Vehicle-to-Everything (V2X) Monitoring Platform') }}">
+  <title>{% block title %}ReckonBot · V2X Platform{% endblock %}</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/favicon.ico') }}">
 
+  <!-- Preconnects -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Fonts -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Global CSS (overrides / complements Tailwind) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive-sidebar.css') }}">
+
+  {% block head_extra %}{% endblock %}
 </head>
 
-<body class="font-[--font-primary] bg-[--bg-color] text-[--text-color] overflow-x-hidden antialiased">
+<body
+  class="[font-family:var(--font-primary)] bg-[var(--bg-color)] text-[var(--text-color)] overflow-x-hidden antialiased"
+  data-page="{{ page|default('default') }}">
   {% include "partials/_header.html" %}
 
   <div class="layout-wrapper flex">
@@ -19,8 +42,8 @@
     {% include "partials/_sidebar.html" %}
     {% block sidebar_after %}{% endblock %}
 
-    <main id="mainContent" class="flex-1 pt-14 px-3 pb-6 min-h-screen transition-all duration-250 lg:ml-64"
-      data-expanded="true" tabindex="-1">
+    <main id="mainContent" class="flex-1 px-3 pb-6"
+      tabindex="-1">
       {% block page_header %}
       <!-- Optional page-level header -->
       {% endblock %}

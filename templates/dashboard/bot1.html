@@ -5,41 +5,45 @@
 {% block page_header %}{% endblock %}
 
 {% block head_extra %}
-{{ super() }}
 <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/favicon.ico') }}">
-<link rel="shortcut icon" href="{{ url_for('static', filename='assets/favicon.svg') }}">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
   href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
   rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bot1.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="bot1-surv px-4 lg:px-4 pb-10">
+<div class="bot1-surv px-4 lg:px-4 pb-10" data-state-url="/api/bot1/state" data-events-url="/api/bot1/events"
+  data-telemetry-age-threshold="10" data-export-default-range="24h">
+
   <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">Bot 1 Surveillance Control Center</h1>
-      <p class="text-sm" style="color:var(--text-muted)">Real-time visual, environmental, and alert telemetry
+      <p class="text-sm" style="color:var(--text-muted)">
+        Real-time visual, environmental, and alert telemetry
       </p>
     </div>
     <div class="flex items-center gap-3">
-      <div class="mode-toggle">
-        <button id="testModeBtn" class="active"><i class="bi bi-file-code"></i> Test Mode</button>
-        <button id="liveModeBtn"><i class="bi bi-broadcast"></i> Live Mode</button>
+      <div class="mode-toggle" role="group" aria-label="Dashboard Mode Toggle">
+        <button id="testModeBtn" class="active" type="button">
+          <i class="bi bi-file-code"></i> Test Mode
+        </button>
+        <button id="liveModeBtn" type="button">
+          <i class="bi bi-broadcast"></i> Live Mode
+        </button>
       </div>
 
-      <button class="connection-btn connected" id="connectionBtn" type="button">
+      <button class="connection-btn disconnected" id="connectionBtn" type="button" aria-live="polite">
         <span class="status-dot"></span>
-        <span id="connectionText">Connected</span>
+        <span id="connectionText">Disconnected</span>
       </button>
 
       <div class="tooltip-trigger">
         <div class="clock-shell font-mono text-xs">
-          <i class="bi bi-clock"></i> <span id="clock">00:00:00</span>
+          <i class="bi bi-clock"></i> <span id="clock">--:--:--</span>
         </div>
         <div class="tooltip-content" id="syncTooltip">Last sync: --</div>
       </div>
@@ -47,26 +51,37 @@
   </header>
 
   <main class="space-y-6">
+    <!-- STREAM + SIDE PANELS -->
     <section class="grid lg:grid-cols-3 gap-6">
+      <!-- Video Panel -->
       <div class="lg:col-span-2 panel">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-3">
             <i class="bi bi-camera-video-fill text-xl" style="color:var(--accent)"></i>
             <h2 class="font-semibold text-lg">Live Video Stream</h2>
-            <span class="alert-badge live">
+            <span class="alert-badge live" id="liveBadge">
               <i class="bi bi-circle-fill live-dot"></i> LIVE
             </span>
+            <span class="alert-badge recording hidden" id="recIndicator">
+              <i class="bi bi-record-circle-fill"></i> REC
+            </span>
           </div>
-          <span class="meta-hint font-mono text-[10px]" style="color:var(--text-muted)">MJPEG • 30fps •
-            Dynamic</span>
+          <span class="meta-hint font-mono text-[10px]" style="color:var(--text-muted)">
+            MJPEG • Dynamic • <span id="streamResLabel">XGA</span>
+          </span>
         </div>
 
         <figure class="video-container">
-          <img id="videoStream" class="video-stream" alt="Bot 1 Stream" src="" data-camera-host="http://10.54.239.221"
-            data-auto-live="true">
+          <img id="videoStream" class="video-stream" alt="Bot 1 Camera Stream" src=""
+            data-camera-host="http://10.54.239.221" data-auto-live="true" data-proxy-preferred="false" decoding="async"
+            referrerpolicy="no-referrer" />
 
+          <div class="stream-overlay hidden" id="streamOverlay">
+            <div class="overlay-line font-mono text-xs" id="streamStats">-- fps • -- kb/s</div>
+            <div class="overlay-line font-mono text-[10px]" id="streamMeta">Awaiting stream...</div>
+          </div>
 
-          <div class="stream-loader hidden" id="streamLoader">
+          <div class="stream-loader" id="streamLoader" aria-hidden="true">
             <div class="spinner"></div>
             <span class="loader-text">Connecting to ESP32-CAM...</span>
           </div>
@@ -74,70 +89,89 @@
 
         <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
           <div class="flex items-center gap-2">
-            <button class="video-control-btn" data-video="play" title="Play"><i class="bi bi-play-fill"></i></button>
-            <button class="video-control-btn" data-video="pause" title="Pause"><i class="bi bi-pause-fill"></i></button>
-            <button class="video-control-btn" data-video="snapshot" title="Snapshot"><i
-                class="bi bi-camera-fill"></i></button>
-            <button class="video-control-btn" data-video="fullscreen" title="Fullscreen"><i
-                class="bi bi-arrows-fullscreen"></i></button>
+            <button class="video-control-btn" data-video="play" title="Play Stream" type="button" aria-label="Play">
+              <i class="bi bi-play-fill"></i>
+            </button>
+            <button class="video-control-btn" data-video="pause" title="Pause Stream" type="button" aria-label="Pause">
+              <i class="bi bi-pause-fill"></i>
+            </button>
+            <button class="video-control-btn" data-video="snapshot" title="Capture Snapshot" type="button"
+              aria-label="Snapshot">
+              <i class="bi bi-camera-fill"></i>
+            </button>
+            <button class="video-control-btn" data-video="fullscreen" title="Fullscreen View" type="button"
+              aria-label="Fullscreen">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
           </div>
           <div class="flex items-center gap-3">
-            <select id="streamQuality" class="quality-select">
-              <option value="vga">VGA</option>
-              <option value="svga">SVGA</option>
-              <option value="xga" selected>XGA</option>
-              <option value="sxga">SXGA</option>
-              <option value="uxga">UXGA</option>
+            <select id="streamQuality" class="quality-select" aria-label="Stream Resolution">
+              <option value="vga">VGA (640×480)</option>
+              <option value="svga">SVGA (800×600)</option>
+              <option value="xga" selected>XGA (1024×768)</option>
+              <option value="sxga">SXGA (1280×1024)</option>
+              <option value="uxga">UXGA (1600×1200)</option>
             </select>
-            <button id="recBtn" class="rec-btn" type="button">
+            <button id="recBtn" class="rec-btn" type="button" aria-pressed="false">
               <i class="bi bi-record-circle-fill"></i> <span>REC</span>
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Side Panels -->
       <aside class="space-y-4">
         <div class="panel">
           <h3 class="panel-label">Bot Status</h3>
           <div class="space-y-3 text-sm">
             <div class="flex items-center justify-between">
-              <span class="flex items-center gap-2"><i class="bi bi-battery-charging" style="color:var(--success)"></i>
-                Battery</span>
+              <span class="flex items-center gap-2">
+                <i class="bi bi-battery-charging" style="color:var(--success)"></i> Battery
+              </span>
               <span class="font-semibold" style="color:var(--success)" id="batteryStatus">--%</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="flex items-center gap-2"><i class="bi bi-reception-4" style="color:var(--success)"></i>
-                Connectivity</span>
+              <span class="flex items-center gap-2">
+                <i class="bi bi-reception-4" style="color:var(--success)"></i> Connectivity
+              </span>
               <span class="font-semibold" style="color:var(--success)" id="netStrength">--</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="flex items-center gap-2"><i class="bi bi-geo-alt-fill" style="color:var(--info)"></i>
-                Location</span>
+              <span class="flex items-center gap-2">
+                <i class="bi bi-geo-alt-fill" style="color:var(--info)"></i> Location
+              </span>
               <span class="font-semibold" style="color:var(--info)" id="botLocation">Zone 3</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="flex items-center gap-2"><i class="bi bi-exclamation-triangle-fill"
-                  style="color:var(--warning)"></i> Active Alerts</span>
+              <span class="flex items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill" style="color:var(--warning)"></i> Active Alerts
+              </span>
               <span class="font-semibold" style="color:var(--warning)" id="activeAlertsCount">0</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <i class="bi bi-stopwatch" style="color:var(--accent)"></i> Telemetry Age
+              </span>
+              <span class="font-mono text-[11px]" id="telemetryAge">--s</span>
             </div>
           </div>
         </div>
 
         <div class="panel">
           <h3 class="panel-label">Recent Activity</h3>
-          <div id="activityLog" class="activity-log"></div>
+          <div id="activityLog" class="activity-log" aria-live="polite"></div>
         </div>
 
         <div class="panel">
           <h3 class="panel-label">Export Reports</h3>
           <div class="flex items-center justify-between gap-3 mt-2">
-            <button class="export-btn export-csv" data-export="csv">
+            <button class="export-btn export-csv" data-export="csv" type="button">
               <i class="bi bi-file-earmark-spreadsheet"></i><span>CSV</span>
             </button>
-            <button class="export-btn export-json" data-export="json">
+            <button class="export-btn export-json" data-export="json" type="button">
               <i class="bi bi-braces"></i><span>JSON</span>
             </button>
-            <button class="export-btn export-pdf" data-export="pdf">
+            <button class="export-btn export-pdf" data-export="pdf" type="button">
               <i class="bi bi-file-earmark-pdf"></i><span>PDF</span>
             </button>
           </div>
@@ -145,6 +179,7 @@
       </aside>
     </section>
 
+    <!-- Telemetry Cards -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="panel">
         <h3 class="panel-label">Ultrasonic Distance</h3>
@@ -185,34 +220,40 @@
       </div>
 
       <div class="panel">
-        <h3 class="panel-label">IR Sensor</h3>
+        <h3 class="panel-label">IR / Obstacle</h3>
         <div class="flex flex-col items-center justify-center py-4 gap-2">
           <div id="irStatusBadge"
-            class="px-3 py-1 text-xs font-semibold rounded-full bg-[--bg-tertiary] border border-[--border-color]">
+            class="px-3 py-1 text-xs font-semibold rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
             --
           </div>
-          <div class="text-[11px] text-[--text-muted]" id="irDetails">Waiting...</div>
-          <div class="w-full h-1.5 rounded bg-[--bg-tertiary] overflow-hidden">
-            <div id="irSignalBar" class="h-full w-0 bg-[--accent-color] transition-all duration-500"></div>
+          <div class="text-[11px] text-[var(--text-muted)]" id="irDetails">Waiting...</div>
+          <div class="w-full h-1.5 rounded bg-[var(--bg-tertiary)] overflow-hidden">
+            <div id="irSignalBar" class="h-full w-0 bg-[var(--accent-color)] transition-all duration-500"></div>
           </div>
-          <div class="flex justify-between w-full text-[9px] text-[--text-muted]">
+          <div class="flex justify-between w-full text-[9px] text-[var(--text-muted)]">
             <span>Low</span><span>High</span>
           </div>
         </div>
-        <div class="mt-2 text-[10px] text-[--text-muted] leading-snug">
-          <span id="irHint">Object / flame / heat detection</span>
+        <div class="mt-2 text-[10px] text-[var(--text-muted)] leading-snug">
+          <span id="irHint">Object / heat / flame detection</span>
         </div>
       </div>
 
       <div class="panel">
         <h3 class="panel-label">Controls & Alerts</h3>
         <div class="space-y-3">
-          <div class="control-modes">
-            <button class="active" data-mode="bluetooth"><i class="bi bi-bluetooth"></i> BT</button>
-            <button data-mode="manual"><i class="bi bi-joystick"></i> Manual</button>
-            <button data-mode="auto"><i class="bi bi-cpu"></i> Auto</button>
+          <div class="control-modes" role="group" aria-label="Bot Control Modes">
+            <button class="active" data-mode="bluetooth" type="button">
+              <i class="bi bi-bluetooth"></i> BT
+            </button>
+            <button data-mode="manual" type="button">
+              <i class="bi bi-joystick"></i> Manual
+            </button>
+            <button data-mode="auto" type="button">
+              <i class="bi bi-cpu"></i> Auto
+            </button>
           </div>
-          <div id="buzzerToggle" class="buzzer-toggle active">
+          <div id="buzzerToggle" class="buzzer-toggle active" role="switch" aria-checked="true" tabindex="0">
             <i class="bi bi-megaphone-fill text-lg" style="color:var(--error)"></i>
             <div class="flex-1 text-xs font-semibold">Buzzer Active</div>
             <i class="bi bi-toggle-on text-2xl" style="color:var(--error)" id="buzzerIcon"></i>
@@ -221,18 +262,21 @@
       </div>
     </section>
 
+    <!-- Analytics & Communication Log -->
     <section class="grid lg:grid-cols-2 gap-6">
       <div class="panel">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold flex items-center gap-2">
             <i class="bi bi-graph-up" style="color:var(--accent)"></i> Sensor Analytics
           </h3>
-          <select class="analytics-range">
-            <option>Last 24 Hours (Simulated)</option>
+          <select class="analytics-range" id="analyticsRange">
+            <option value="24h">Last 24 Hours (Simulated)</option>
+            <option value="1h">Last Hour (Simulated)</option>
+            <option value="live">Live Session</option>
           </select>
         </div>
         <div class="chart-shell">
-          <canvas id="analyticsChart"></canvas>
+          <canvas id="analyticsChart" aria-label="Sensor analytics chart" role="img"></canvas>
         </div>
       </div>
 
@@ -261,16 +305,31 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs" style="color:var(--text-muted)">
       <div>© 2025 ReckonBot · Bot 1 Surveillance System</div>
       <div class="flex items-center gap-4">
-        <span>v2.1.0</span><span>•</span><span>Powered by ESP32</span>
+        <span>v2.2.0</span><span>•</span><span>Powered by ESP32</span><span>•</span><span id="buildMeta">Build {{
+          BUILD_ID }}</span>
       </div>
     </div>
   </footer>
 
-  <div id="toastContainer" class="fixed top-20 right-6 z-[--z-toast] flex flex-col gap-3 pointer-events-none"></div>
+  <div id="toastContainer" class="fixed top-20 right-6 z-[var(--z-toast)] flex flex-col gap-3 pointer-events-none">
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts_extra %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Runtime configuration injection (kept minimal; extend as needed) -->
+<script>
+  window.Bot1Config = {
+    useSSE: true,
+    cameraHost: document.currentScript?.closest('.bot1-surv')?.querySelector('#videoStream')?.dataset?.cameraHost || 'http://10.54.239.221',
+    proxyPreferred: false,
+    stateEndpoint: '/api/bot1/state',
+    eventsEndpoint: '/api/bot1/events',
+    telemetryStaleSeconds: parseInt(document.querySelector('.bot1-surv')?.dataset?.telemetryAgeThreshold || '10', 10),
+    version: '2.2.0'
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+  integrity="sha384-FJ/Y9Yq3K2WWcL1WIn3blGGPgH9YDEW5xL6wXhZ5T1C7LQn3kJEy5pNbMAvY0Ylg" crossorigin="anonymous"></script>
 <script type="module" src="{{ url_for('static', filename='js/modules/bot1.js') }}"></script>
 {% endblock %}

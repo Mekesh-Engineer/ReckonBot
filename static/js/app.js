@@ -1,3 +1,5 @@
+"use strict";
+
 // Entry point orchestrating all modules
 import { ThemeManager } from './modules/theme.js';
 import { SidebarManager } from './modules/sidebar.js';
@@ -8,8 +10,11 @@ import { BreadcrumbManager } from './modules/breadcrumbs.js';
 import { NavigationManager } from './modules/navigation.js';
 import { PerformanceMonitor } from './modules/performance.js';
 
+/**
+ * Initializes the main app logic securely and gracefully.
+ */
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🔧 Initializing FlowGateX...');
+  console.log('🔧 Initializing ReckonBot Platform...');
 
   try {
     const theme = new ThemeManager();
@@ -38,13 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const perf = new PerformanceMonitor();
     perf.watch();
 
-    window.FlowGateX = {
+    window.ReckonBot = {
       version: '2.0.0',
       theme: () => document.documentElement.getAttribute('data-theme'),
       api: { theme, sidebar, dropdowns, modals, search, breadcrumbs, navigation }
     };
 
-    console.log('✅ FlowGateX initialized');
+    console.log('✅ ReckonBot Platform initialized');
   } catch (err) {
     console.error('❌ Initialization error:', err);
   }

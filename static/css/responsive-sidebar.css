@@ -1,117 +1,237 @@
+/* =====================================================
+   Responsive Sidebar Layout System
+   =====================================================
+   Single source of truth for all sidebar layout behavior.
+   
+   Layout tiers:
+     - Mobile   (<1024px): Overlay drawer, slides in from left
+     - Desktop  (≥1024px): Fixed sidebar, content shifts right
+   
+   States:
+     body.sidebar-open    → sidebar visible
+     body.sidebar-closed  → sidebar hidden / collapsed
+   ===================================================== */
+
 :root {
-    --sidebar-rail-width: 72px;
-    --sidebar-full-width: 18rem;
-    --sidebar-transition: 240ms cubic-bezier(.4, 0, .2, 1);
-    --content-left-offset: 0;
-    --content-max-width: var(--injected-content-max-width, 1280px);
+    --sidebar-width: 16rem;           /* 256px – full sidebar */
+    --sidebar-collapsed-width: 0px;   /* fully hidden when collapsed */
+    --sidebar-transition: 300ms cubic-bezier(.4, 0, .2, 1);
+    --header-height: 3.5rem;          /* ~56px top bar */
 }
 
-body {
-    --scrollbar-bg: transparent;
-}
-
+/* ===========================
+   Sidebar Base
+=========================== */
 #sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100dvh;
-    background: var(--sidebar-bg, #121212);
-    color: var(--sidebar-fg, #fff);
-    width: var(--sidebar-full-width);
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--bg-secondary, #12171d);
+    border-right: 1px solid var(--border-color, rgba(255,255,255,0.14));
+    z-index: 70;
     display: flex;
     flex-direction: column;
-    z-index: 60;
+    transform: translateX(-100%);
     transition:
         transform var(--sidebar-transition),
         width var(--sidebar-transition),
         box-shadow var(--sidebar-transition);
-    will-change: transform, width;
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-}
-
-/* Overlay (mobile) */
-.layout--overlay #sidebar {
-    transform: translateX(-100%);
-    width: var(--sidebar-full-width);
-}
-
-.layout--overlay.sidebar-open #sidebar,
-.layout--overlay #sidebar.is-active {
-    transform: translateX(0);
-    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45);
-}
-
-/* Rail (narrow desktop) */
-.layout--rail #sidebar {
-    transform: translateX(0);
-    width: var(--sidebar-rail-width);
-    box-shadow: none;
+    will-change: transform;
     overflow: hidden;
 }
 
-/* Full (wide desktop) */
-.layout--sidebar #sidebar {
-    transform: translateX(0);
-    width: var(--sidebar-full-width);
+/* ===========================
+   Backdrop (mobile overlay)
+=========================== */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 65;
+    pointer-events: none;
+    transition: background var(--sidebar-transition);
 }
 
-/* Optional collapsed styling if you later add collapse logic */
-.sidebar-closed.layout--sidebar #sidebar {
-    width: var(--sidebar-rail-width);
+.backdrop[hidden] {
+    display: block !important;  /* keep in DOM for transition */
+    background: rgba(0, 0, 0, 0);
+    pointer-events: none;
 }
 
-/* Content shifting */
-main,
-.app-main,
-.app-content,
-#app-content,
-[data-app-content] {
+/* ===========================
+   Main Content Area
+=========================== */
+#mainContent {
+    margin-left: 0;
     transition: margin-left var(--sidebar-transition);
-    margin-left: var(--content-left-offset);
+    will-change: margin-left;
+    min-height: 100vh;
+    padding-top: var(--header-height);
 }
 
-/* Centered max width container (wrap your page body) */
-.max-width-container {
-    max-width: var(--content-max-width);
-    margin-inline: auto;
-    width: 100%;
-    padding-inline: clamp(1rem, 2vw, 2rem);
+/* ===========================
+   Header
+=========================== */
+header.fixed {
+    transition: padding-left var(--sidebar-transition);
+    padding-left: 0;
 }
 
-/* Smooth fade for icon/text inside rail */
-.layout--rail #sidebar .nav-label,
-.sidebar-closed #sidebar .nav-label {
+/* =====================================================
+   MOBILE LAYOUT (<1024px) — Overlay Drawer
+===================================================== */
+@media (max-width: 1023px) {
+    /* Sidebar slides in as overlay, no content shift */
+    #mainContent {
+        margin-left: 0 !important;
+    }
+
+    header.fixed {
+        padding-left: 0 !important;
+    }
+
+    /* Open state: slide sidebar in, show backdrop */
+    body.sidebar-open #sidebar {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    }
+
+    body.sidebar-open .backdrop {
+        background: rgba(0, 0, 0, 0.55);
+        pointer-events: auto;
+    }
+}
+
+/* =====================================================
+   DESKTOP LAYOUT (≥1024px) — Persistent Sidebar
+===================================================== */
+@media (min-width: 1024px) {
+    /* Backdrop never shows on desktop */
+    .backdrop {
+        display: none !important;
+    }
+
+    /* Open state: sidebar visible, content shifts */
+    body.sidebar-open #sidebar {
+        transform: translateX(0);
+    }
+
+    body.sidebar-open #mainContent {
+        margin-left: var(--sidebar-width);
+    }
+
+    body.sidebar-open header.fixed {
+        padding-left: var(--sidebar-width);
+    }
+
+    /* Closed state: sidebar hidden, content full-width */
+    body.sidebar-closed #sidebar {
+        transform: translateX(-100%);
+    }
+
+    body.sidebar-closed #mainContent {
+        margin-left: 0;
+    }
+
+    body.sidebar-closed header.fixed {
+        padding-left: 0;
+    }
+}
+
+/* ===========================
+   Toggle Button Icons
+=========================== */
+[data-toggle="sidebar"] .toggle-icon[data-state="open"] {
+    display: none;
+}
+
+[data-toggle="sidebar"] .toggle-icon[data-state="closed"] {
+    display: inline-flex;
+}
+
+body.sidebar-open [data-toggle="sidebar"] .toggle-icon[data-state="open"] {
+    display: inline-flex;
+}
+
+body.sidebar-open [data-toggle="sidebar"] .toggle-icon[data-state="closed"] {
+    display: none;
+}
+
+/* ===========================
+   Sidebar Inner Content
+=========================== */
+#sidebar .sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: var(--header-height);
+}
+
+/* ===========================
+   Collapsed Rail (optional)
+=========================== */
+#sidebar.is-collapsed {
+    width: 4.5rem;
+}
+
+#sidebar.is-collapsed .nav-section-label,
+#sidebar.is-collapsed .search-trigger span,
+#sidebar.is-collapsed .search-trigger kbd.shortcut,
+#sidebar.is-collapsed footer {
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--sidebar-transition);
+    transition: opacity 150ms ease;
 }
 
-.layout--sidebar #sidebar .nav-label,
-.layout--overlay #sidebar .nav-label,
-.sidebar-open #sidebar .nav-label {
-    opacity: 1;
-    pointer-events: auto;
+#sidebar.is-collapsed .nav-link span,
+#sidebar.is-collapsed .nav-link .nav-label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity 150ms ease, width 150ms ease;
 }
 
-/* Scroll containment */
+#sidebar.is-collapsed .nav-link {
+    justify-content: center;
+    padding-inline: 0.5rem;
+}
+
+#sidebar.is-collapsed .search-trigger {
+    justify-content: center;
+    padding-inline: 0.5rem;
+}
+
+/* ===========================
+   Scroll containment
+=========================== */
 #sidebar .nav-scroll {
     overflow-y: auto;
     flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary, rgba(255,255,255,0.14)) transparent;
 }
 
-/* Accessibility focus */
-#sidebar a:focus-visible {
-    outline: 2px solid var(--focus-color, #6ea8fe);
+/* ===========================
+   Accessibility / Focus
+=========================== */
+#sidebar a:focus-visible,
+#sidebar button:focus-visible {
+    outline: 2px solid var(--accent-color, #ff6b35);
     outline-offset: 2px;
 }
 
-/* Reduce motion */
+/* ===========================
+   Reduced Motion
+=========================== */
 @media (prefers-reduced-motion: reduce) {
-
     #sidebar,
-    main,
-    .app-main,
-    .app-content {
+    #mainContent,
+    header.fixed,
+    .backdrop,
+    [data-toggle="sidebar"] .toggle-icon {
         transition: none !important;
     }
 }

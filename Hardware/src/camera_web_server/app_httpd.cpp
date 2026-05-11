@@ -20,6 +20,7 @@
 #include "sdkconfig.h"
 #include "camera_index.h"
 #include "board_config.h"
+#include <WiFi.h>
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
@@ -43,6 +44,16 @@ typedef struct {
 static const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
 static const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\nX-Timestamp: %d.%06d\r\n\r\n";
+
+#ifndef ALLOWED_ORIGIN
+#define ALLOWED_ORIGIN "*"
+#endif
+
+static inline void set_common_headers(httpd_req_t *req) {
+  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  httpd_resp_set_hdr(req, "X-Content-Type-Options", "nosniff");
+}
 
 httpd_handle_t stream_httpd = NULL;
 httpd_handle_t camera_httpd = NULL;
@@ -115,7 +126,7 @@ static esp_err_t bmp_handler(httpd_req_t *req) {
 
   httpd_resp_set_type(req, "image/x-windows-bmp");
   httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.bmp");
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
 
   char ts[32];
   snprintf(ts, 32, "%lld.%06ld", fb->timestamp.tv_sec, fb->timestamp.tv_usec);
@@ -175,7 +186,7 @@ static esp_err_t capture_handler(httpd_req_t *req) {
 
   httpd_resp_set_type(req, "image/jpeg");
   httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
 
   char ts[32];
   snprintf(ts, 32, "%lld.%06ld", fb->timestamp.tv_sec, fb->timestamp.tv_usec);
@@ -223,7 +234,7 @@ static esp_err_t stream_handler(httpd_req_t *req) {
     return res;
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   httpd_resp_set_hdr(req, "X-Framerate", "60");
 
 #if defined(LED_GPIO_NUM)
@@ -406,7 +417,7 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
     return httpd_resp_send_500(req);
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, NULL, 0);
 }
 
@@ -485,7 +496,18 @@ static esp_err_t status_handler(httpd_req_t *req) {
   *p++ = '}';
   *p++ = 0;
   httpd_resp_set_type(req, "application/json");
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
+  return httpd_resp_send(req, json_response, strlen(json_response));
+}
+
+static esp_err_t health_handler(httpd_req_t *req) {
+  char json_response[160];
+  const char *wifi_state = (WiFi.status() == WL_CONNECTED) ? "connected" : "disconnected";
+  snprintf(json_response, sizeof(json_response),
+           "{\"status\":\"ok\",\"uptime_ms\":%lu,\"wifi\":\"%s\"}",
+           millis(), wifi_state);
+  httpd_resp_set_type(req, "application/json");
+  set_common_headers(req);
   return httpd_resp_send(req, json_response, strlen(json_response));
 }
 
@@ -512,7 +534,7 @@ static esp_err_t xclk_handler(httpd_req_t *req) {
     return httpd_resp_send_500(req);
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, NULL, 0);
 }
 
@@ -544,7 +566,7 @@ static esp_err_t reg_handler(httpd_req_t *req) {
     return httpd_resp_send_500(req);
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, NULL, 0);
 }
 
@@ -574,7 +596,7 @@ static esp_err_t greg_handler(httpd_req_t *req) {
 
   char buffer[20];
   const char *val = itoa(res, buffer, 10);
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, val, strlen(val));
 }
 
@@ -610,7 +632,7 @@ static esp_err_t pll_handler(httpd_req_t *req) {
     return httpd_resp_send_500(req);
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, NULL, 0);
 }
 
@@ -645,7 +667,7 @@ static esp_err_t win_handler(httpd_req_t *req) {
     return httpd_resp_send_500(req);
   }
 
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+  set_common_headers(req);
   return httpd_resp_send(req, NULL, 0);
 }
 
@@ -669,7 +691,7 @@ static esp_err_t index_handler(httpd_req_t *req) {
 
 void startCameraServer() {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-  config.max_uri_handlers = 16;
+  config.max_uri_handlers = 17;
 
   httpd_uri_t index_uri = {
     .uri = "/",
@@ -688,6 +710,19 @@ void startCameraServer() {
     .uri = "/status",
     .method = HTTP_GET,
     .handler = status_handler,
+    .user_ctx = NULL
+#ifdef CONFIG_HTTPD_WS_SUPPORT
+    ,
+    .is_websocket = true,
+    .handle_ws_control_frames = false,
+    .supported_subprotocol = NULL
+#endif
+  };
+
+  httpd_uri_t health_uri = {
+    .uri = "/health",
+    .method = HTTP_GET,
+    .handler = health_handler,
     .user_ctx = NULL
 #ifdef CONFIG_HTTPD_WS_SUPPORT
     ,
@@ -821,6 +856,7 @@ void startCameraServer() {
     httpd_register_uri_handler(camera_httpd, &index_uri);
     httpd_register_uri_handler(camera_httpd, &cmd_uri);
     httpd_register_uri_handler(camera_httpd, &status_uri);
+    httpd_register_uri_handler(camera_httpd, &health_uri);
     httpd_register_uri_handler(camera_httpd, &capture_uri);
     httpd_register_uri_handler(camera_httpd, &bmp_uri);
 
